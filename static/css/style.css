@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-family: 'Press Start 2P', monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+h1 {
+    font-size: 2rem;
+    color: #e94560;
+    margin-bottom: 0.5rem;
+    text-shadow: 3px 3px 0 #0f3460;
+}
+
+.subtitle {
+    font-size: 0.6rem;
+    color: #888;
+    margin-bottom: 2rem;
+}
+
+canvas {
+    border: 4px solid #0f3460;
+    border-radius: 4px;
+    image-rendering: pixelated;
+    background: #16213e;
+}
+
+#hud {
+    display: flex;
+    justify-content: space-between;
+    width: 480px;
+    padding: 0.5rem 0;
+    font-size: 0.7rem;
+}
+
+#hud span {
+    color: #e94560;
+}
+
+/* Character select screen */
+#char-select {
+    text-align: center;
+}
+
+#char-select h2 {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    color: #e94560;
+}
+
+.char-options {
+    display: flex;
+    gap: 3rem;
+    justify-content: center;
+}
+
+.char-option {
+    cursor: pointer;
+    text-align: center;
+    padding: 1.5rem;
+    border: 3px solid #0f3460;
+    border-radius: 8px;
+    background: #16213e;
+    transition: all 0.2s;
+}
+
+.char-option:hover {
+    border-color: #e94560;
+    transform: scale(1.05);
+}
+
+.char-option canvas {
+    border: none;
+    margin-bottom: 0.5rem;
+}
+
+.char-option .name {
+    font-size: 0.8rem;
+    color: #e0e0e0;
+    margin-top: 0.5rem;
+}
+
+/* Game over */
+#game-over {
+    display: none;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+#game-over h2 {
+    font-size: 1.5rem;
+    color: #e94560;
+    margin-bottom: 1rem;
+}
+
+#game-over .score {
+    font-size: 0.8rem;
+    margin-bottom: 2rem;
+}
+
+#game-over button {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.7rem;
+    padding: 0.8rem 1.5rem;
+    background: #e94560;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 0.3rem;
+}
+
+#game-over button:hover {
+    background: #c73652;
+}
+
+#game-screen {
+    display: none;
+    position: relative;
+}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chytaj Jablká - Oto & Lujza</title>
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+    <h1>Chytaj Jablká</h1>
+    <p class="subtitle">hra s Otom a Lujzou</p>
+
+    <div id="char-select">
+        <h2>Vyber si postavu</h2>
+        <div class="char-options">
+            <div class="char-option" onclick="selectCharacter('oto')">
+                <canvas id="oto-preview"></canvas>
+                <div class="name">Oto</div>
+                <div class="subtitle">ježko</div>
+            </div>
+            <div class="char-option" onclick="selectCharacter('lujza')">
+                <canvas id="lujza-preview"></canvas>
+                <div class="name">Lujza</div>
+                <div class="subtitle">veverička</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-screen">
+        <div id="hud">
+            <div>Skóre: <span id="score">0</span></div>
+            <div id="lives">❤❤❤</div>
+        </div>
+        <canvas id="game-canvas"></canvas>
+
+        <div id="game-over">
+            <h2>Koniec hry!</h2>
+            <div class="score">Skóre: <span id="final-score">0</span></div>
+            <button onclick="restartGame()">Hrať znova</button>
+            <button onclick="backToSelect()">Zmeniť postavu</button>
+        </div>
+    </div>
+
+    <script src="static/js/sprites.js"></script>
+    <script src="static/js/game.js"></script>
+</body>
+</html>
