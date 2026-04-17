@@ -1,184 +1,272 @@
 /**
- * Pixel-art sprites for Oto (hedgehog) and Lujza (squirrel)
- * Based on the illustrated characters from the textbook.
- *
- * Oto: round brown hedgehog, dark spines on top/back, light tan belly/face
- * Lujza: orange-brown squirrel, big bushy tail curling up, lighter belly
+ * Sprites for Oto (hedgehog) and Lujza (squirrel)
+ * Drawn with arcs and circles to match the rounded illustration style.
  */
 
 function drawOto(ctx, x, y, size) {
-    const s = size / 16;
+    const cx = x + size / 2;
+    const cy = y + size / 2;
+    const r = size / 2;
     ctx.save();
-    ctx.translate(x, y);
 
-    // Spines (dark brown, rounded on top)
+    // Spines (dark brown dome on top half)
     ctx.fillStyle = '#4a3728';
-    ctx.fillRect(4*s, 1*s, 8*s, s);
-    ctx.fillRect(3*s, 2*s, 10*s, s);
-    ctx.fillRect(2*s, 3*s, 12*s, s);
-    ctx.fillRect(2*s, 4*s, 12*s, s);
-    ctx.fillRect(2*s, 5*s, 12*s, s);
-    ctx.fillRect(3*s, 6*s, 11*s, s);
-    ctx.fillRect(3*s, 7*s, 11*s, s);
+    ctx.beginPath();
+    ctx.arc(cx, cy - r * 0.05, r * 0.95, Math.PI, 0);
+    ctx.closePath();
+    ctx.fill();
 
-    // Spine highlights (lighter brown streaks)
+    // Spine texture (lighter spikes)
     ctx.fillStyle = '#6b5240';
-    ctx.fillRect(5*s, 2*s, s, s);
-    ctx.fillRect(8*s, 2*s, s, s);
-    ctx.fillRect(11*s, 2*s, s, s);
-    ctx.fillRect(3*s, 4*s, s, s);
-    ctx.fillRect(6*s, 3*s, s, s);
-    ctx.fillRect(10*s, 4*s, s, s);
-    ctx.fillRect(4*s, 6*s, s, s);
-    ctx.fillRect(9*s, 5*s, s, s);
-    ctx.fillRect(12*s, 6*s, s, s);
+    for (let angle = -150; angle <= -30; angle += 15) {
+        const rad = angle * Math.PI / 180;
+        const sx = cx + Math.cos(rad) * r * 0.7;
+        const sy = cy - r * 0.05 + Math.sin(rad) * r * 0.7;
+        const ex = cx + Math.cos(rad) * r * 1.0;
+        const ey = cy - r * 0.05 + Math.sin(rad) * r * 1.0;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(ex - 2, ey);
+        ctx.lineTo(ex + 2, ey);
+        ctx.closePath();
+        ctx.fill();
+    }
 
-    // Body (warm brown)
+    // Body (warm brown, bottom half)
     ctx.fillStyle = '#8B6914';
-    ctx.fillRect(3*s, 8*s, 10*s, 3*s);
-    ctx.fillRect(4*s, 11*s, 8*s, 2*s);
+    ctx.beginPath();
+    ctx.arc(cx, cy + r * 0.1, r * 0.85, 0, Math.PI);
+    ctx.closePath();
+    ctx.fill();
 
-    // Face/belly (light tan)
+    // Belly/face (light tan, oval)
     ctx.fillStyle = '#F5DEB3';
-    ctx.fillRect(5*s, 8*s, 6*s, 4*s);
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + r * 0.15, r * 0.55, r * 0.6, 0, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Eyes (big, friendly)
+    // Eyes (big, round, white with black pupil)
+    const eyeY = cy - r * 0.05;
+    const eyeR = r * 0.15;
+    // Left eye
     ctx.fillStyle = '#fff';
-    ctx.fillRect(5*s, 8*s, 2*s, 2*s);
-    ctx.fillRect(9*s, 8*s, 2*s, 2*s);
+    ctx.beginPath();
+    ctx.arc(cx - r * 0.25, eyeY, eyeR, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#000';
-    ctx.fillRect(6*s, 8.5*s, s, s);
-    ctx.fillRect(10*s, 8.5*s, s, s);
+    ctx.beginPath();
+    ctx.arc(cx - r * 0.2, eyeY + 1, eyeR * 0.55, 0, Math.PI * 2);
+    ctx.fill();
+    // Right eye
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(cx + r * 0.25, eyeY, eyeR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(cx + r * 0.3, eyeY + 1, eyeR * 0.55, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Nose (round, dark)
-    ctx.fillStyle = '#2c1810';
-    ctx.fillRect(7*s, 10*s, 2*s, 1.5*s);
+    // Nose (prominent, round, dark)
+    ctx.fillStyle = '#1a1008';
+    ctx.beginPath();
+    ctx.arc(cx, cy + r * 0.2, r * 0.12, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Mouth (little smile)
-    ctx.fillStyle = '#5a3a20';
-    ctx.fillRect(6.5*s, 11.5*s, s, 0.5*s);
-    ctx.fillRect(8.5*s, 11.5*s, s, 0.5*s);
+    // Nose highlight
+    ctx.fillStyle = '#444';
+    ctx.beginPath();
+    ctx.arc(cx - r * 0.04, cy + r * 0.17, r * 0.04, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Feet (little round paws)
+    // Little smile
+    ctx.strokeStyle = '#5a3a20';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy + r * 0.25, r * 0.12, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+
+    // Ears (tiny, poking through spines)
+    ctx.fillStyle = '#8B6914';
+    ctx.beginPath();
+    ctx.ellipse(cx - r * 0.55, cy - r * 0.35, r * 0.1, r * 0.15, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx + r * 0.55, cy - r * 0.35, r * 0.1, r * 0.15, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Feet (small, round)
     ctx.fillStyle = '#6b5240';
-    ctx.fillRect(4*s, 13*s, 3*s, 2*s);
-    ctx.fillRect(9*s, 13*s, 3*s, 2*s);
-
-    // Toes
-    ctx.fillStyle = '#4a3728';
-    ctx.fillRect(4*s, 14.5*s, s, 0.5*s);
-    ctx.fillRect(6*s, 14.5*s, s, 0.5*s);
-    ctx.fillRect(9*s, 14.5*s, s, 0.5*s);
-    ctx.fillRect(11*s, 14.5*s, s, 0.5*s);
+    ctx.beginPath();
+    ctx.ellipse(cx - r * 0.35, cy + r * 0.85, r * 0.18, r * 0.1, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx + r * 0.35, cy + r * 0.85, r * 0.18, r * 0.1, 0, 0, Math.PI * 2);
+    ctx.fill();
 
     ctx.restore();
 }
 
 function drawLujza(ctx, x, y, size) {
-    const s = size / 16;
+    const cx = x + size / 2;
+    const cy = y + size * 0.55;
+    const r = size * 0.35;
     ctx.save();
-    ctx.translate(x, y);
 
-    // Bushy tail (curving up and over, big and fluffy)
+    // Big fluffy tail (curving up behind, the defining feature)
     ctx.fillStyle = '#D2691E';
-    ctx.fillRect(12*s, 5*s, 3*s, 2*s);
-    ctx.fillRect(13*s, 3*s, 3*s, 3*s);
-    ctx.fillRect(14*s, 1*s, 2*s, 3*s);
-    ctx.fillRect(13*s, 0, 2*s, 2*s);
-    ctx.fillRect(12*s, 0, 2*s, s);
+    ctx.beginPath();
+    ctx.moveTo(cx + r * 0.5, cy + r * 0.3);
+    ctx.quadraticCurveTo(cx + r * 2.2, cy - r * 0.5, cx + r * 1.5, cy - r * 2.2);
+    ctx.quadraticCurveTo(cx + r * 0.8, cy - r * 2.8, cx + r * 0.3, cy - r * 2.0);
+    ctx.quadraticCurveTo(cx + r * 0.0, cy - r * 1.2, cx + r * 0.5, cy + r * 0.3);
+    ctx.fill();
     // Tail highlight
     ctx.fillStyle = '#E8A050';
-    ctx.fillRect(14*s, 2*s, s, 2*s);
-    ctx.fillRect(13*s, 4*s, s, s);
+    ctx.beginPath();
+    ctx.moveTo(cx + r * 0.7, cy - r * 0.2);
+    ctx.quadraticCurveTo(cx + r * 1.8, cy - r * 0.8, cx + r * 1.3, cy - r * 1.9);
+    ctx.quadraticCurveTo(cx + r * 0.9, cy - r * 2.2, cx + r * 0.5, cy - r * 1.6);
+    ctx.quadraticCurveTo(cx + r * 0.3, cy - r * 0.8, cx + r * 0.7, cy - r * 0.2);
+    ctx.fill();
 
-    // Ears (pointy, tufted)
+    // Ears (pointy)
     ctx.fillStyle = '#B8651A';
-    ctx.fillRect(4*s, 0, 2*s, 3*s);
-    ctx.fillRect(9*s, 0, 2*s, 3*s);
-    // Ear tufts
-    ctx.fillStyle = '#D2691E';
-    ctx.fillRect(4*s, 0, s, s);
-    ctx.fillRect(10*s, 0, s, s);
+    ctx.beginPath();
+    ctx.moveTo(cx - r * 0.5, cy - r * 1.0);
+    ctx.lineTo(cx - r * 0.35, cy - r * 1.7);
+    ctx.lineTo(cx - r * 0.05, cy - r * 1.0);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx + r * 0.05, cy - r * 1.0);
+    ctx.lineTo(cx + r * 0.35, cy - r * 1.7);
+    ctx.lineTo(cx + r * 0.5, cy - r * 1.0);
+    ctx.fill();
+    // Inner ear
+    ctx.fillStyle = '#DEBB95';
+    ctx.beginPath();
+    ctx.moveTo(cx - r * 0.4, cy - r * 1.05);
+    ctx.lineTo(cx - r * 0.33, cy - r * 1.45);
+    ctx.lineTo(cx - r * 0.12, cy - r * 1.05);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx + r * 0.12, cy - r * 1.05);
+    ctx.lineTo(cx + r * 0.33, cy - r * 1.45);
+    ctx.lineTo(cx + r * 0.4, cy - r * 1.05);
+    ctx.fill();
 
-    // Head
+    // Head (round)
     ctx.fillStyle = '#CD853F';
-    ctx.fillRect(4*s, 2*s, 7*s, 5*s);
-    ctx.fillRect(3*s, 3*s, 9*s, 3*s);
+    ctx.beginPath();
+    ctx.arc(cx, cy - r * 0.6, r * 0.65, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Body
+    // Body (oval)
     ctx.fillStyle = '#CD853F';
-    ctx.fillRect(4*s, 7*s, 8*s, 5*s);
-    ctx.fillRect(3*s, 8*s, 10*s, 3*s);
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + r * 0.3, r * 0.55, r * 0.75, 0, 0, Math.PI * 2);
+    ctx.fill();
 
     // Belly (lighter)
     ctx.fillStyle = '#F5DEB3';
-    ctx.fillRect(5*s, 8*s, 5*s, 3*s);
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + r * 0.35, r * 0.35, r * 0.55, 0, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Face (lighter muzzle area)
-    ctx.fillStyle = '#F5DEB3';
-    ctx.fillRect(6*s, 4*s, 3*s, 3*s);
+    // Cheeks / muzzle (lighter area on face)
+    ctx.fillStyle = '#EEDCB8';
+    ctx.beginPath();
+    ctx.ellipse(cx, cy - r * 0.4, r * 0.35, r * 0.3, 0, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Eyes (big, bright)
+    // Eyes (big, round)
+    const eyeY = cy - r * 0.7;
+    const eyeR = r * 0.16;
     ctx.fillStyle = '#fff';
-    ctx.fillRect(5*s, 3*s, 2*s, 2*s);
-    ctx.fillRect(8*s, 3*s, 2*s, 2*s);
+    ctx.beginPath();
+    ctx.arc(cx - r * 0.25, eyeY, eyeR, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#000';
-    ctx.fillRect(6*s, 3.5*s, s, s);
-    ctx.fillRect(9*s, 3.5*s, s, s);
+    ctx.beginPath();
+    ctx.arc(cx - r * 0.2, eyeY + 1, eyeR * 0.55, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(cx + r * 0.25, eyeY, eyeR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(cx + r * 0.3, eyeY + 1, eyeR * 0.55, 0, Math.PI * 2);
+    ctx.fill();
 
     // Nose
-    ctx.fillStyle = '#2c1810';
-    ctx.fillRect(7*s, 5.5*s, 1.5*s, s);
+    ctx.fillStyle = '#1a1008';
+    ctx.beginPath();
+    ctx.arc(cx, cy - r * 0.4, r * 0.08, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Little smile
-    ctx.fillStyle = '#8B5A2B';
-    ctx.fillRect(6.5*s, 6.5*s, s, 0.5*s);
-    ctx.fillRect(8*s, 6.5*s, s, 0.5*s);
+    // Smile
+    ctx.strokeStyle = '#8B5A2B';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy - r * 0.32, r * 0.1, 0.2, Math.PI - 0.2);
+    ctx.stroke();
 
-    // Arms (little paws at sides)
+    // Arms (little paws)
     ctx.fillStyle = '#B8651A';
-    ctx.fillRect(2*s, 8*s, 2*s, 2*s);
-    ctx.fillRect(11*s, 8*s, 2*s, 2*s);
+    ctx.beginPath();
+    ctx.ellipse(cx - r * 0.65, cy + r * 0.1, r * 0.12, r * 0.2, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx + r * 0.65, cy + r * 0.1, r * 0.12, r * 0.2, -0.3, 0, Math.PI * 2);
+    ctx.fill();
 
     // Feet
     ctx.fillStyle = '#8B5A2B';
-    ctx.fillRect(4*s, 12*s, 3*s, 2*s);
-    ctx.fillRect(8*s, 12*s, 3*s, 2*s);
-
-    // Toes
-    ctx.fillStyle = '#6b4020';
-    ctx.fillRect(4*s, 13.5*s, s, 0.5*s);
-    ctx.fillRect(6*s, 13.5*s, s, 0.5*s);
-    ctx.fillRect(8*s, 13.5*s, s, 0.5*s);
-    ctx.fillRect(10*s, 13.5*s, s, 0.5*s);
+    ctx.beginPath();
+    ctx.ellipse(cx - r * 0.3, cy + r * 1.05, r * 0.2, r * 0.1, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx + r * 0.3, cy + r * 1.05, r * 0.2, r * 0.1, 0, 0, Math.PI * 2);
+    ctx.fill();
 
     ctx.restore();
 }
 
 function drawApple(ctx, x, y, size) {
-    const s = size / 12;
+    const cx = x + size / 2;
+    const cy = y + size / 2 + 2;
+    const r = size * 0.38;
     ctx.save();
-    ctx.translate(x, y);
 
-    // Apple body (red)
+    // Apple body
     ctx.fillStyle = '#e94560';
-    ctx.fillRect(3*s, 4*s, 6*s, 6*s);
-    ctx.fillRect(2*s, 5*s, 8*s, 4*s);
-    ctx.fillRect(4*s, 3*s, 4*s, s);
-    ctx.fillRect(3*s, 10*s, 6*s, s);
-
-    // Stem (brown)
-    ctx.fillStyle = '#5C4033';
-    ctx.fillRect(5.5*s, 1*s, s, 3*s);
-
-    // Leaf (green)
-    ctx.fillStyle = '#2ecc71';
-    ctx.fillRect(6.5*s, 2*s, 2*s, s);
-    ctx.fillRect(7.5*s, 1*s, s, s);
+    ctx.beginPath();
+    ctx.arc(cx - r * 0.25, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx + r * 0.25, cy, r, 0, Math.PI * 2);
+    ctx.fill();
 
     // Highlight
     ctx.fillStyle = '#ff6b81';
-    ctx.fillRect(4*s, 5*s, s, 2*s);
+    ctx.beginPath();
+    ctx.arc(cx - r * 0.3, cy - r * 0.3, r * 0.25, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Stem
+    ctx.strokeStyle = '#5C4033';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - r * 0.9);
+    ctx.lineTo(cx + 1, cy - r * 1.5);
+    ctx.stroke();
+
+    // Leaf
+    ctx.fillStyle = '#2ecc71';
+    ctx.beginPath();
+    ctx.ellipse(cx + r * 0.35, cy - r * 1.3, r * 0.4, r * 0.15, 0.4, 0, Math.PI * 2);
+    ctx.fill();
 
     ctx.restore();
 }
@@ -187,40 +275,62 @@ function drawBasket(ctx, x, y, width, height) {
     ctx.save();
     ctx.translate(x, y);
 
-    // Basket body (woven brown)
-    ctx.fillStyle = '#A0522D';
-    ctx.fillRect(0, height * 0.3, width, height * 0.7);
+    // Basket shape (trapezoid with rounded bottom)
+    const topW = width;
+    const botW = width * 0.75;
+    const offsetX = (topW - botW) / 2;
 
-    // Lighter weave stripes
-    ctx.fillStyle = '#CD853F';
-    for (let i = 0; i < width; i += 6) {
-        ctx.fillRect(i, height * 0.3, 3, height * 0.7);
+    // Main basket body
+    ctx.fillStyle = '#A0522D';
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(topW, 0);
+    ctx.lineTo(topW - offsetX, height);
+    ctx.lineTo(offsetX, height);
+    ctx.closePath();
+    ctx.fill();
+
+    // Weave pattern (horizontal lines)
+    ctx.strokeStyle = '#CD853F';
+    ctx.lineWidth = 2;
+    for (let row = height * 0.25; row < height; row += height * 0.2) {
+        ctx.beginPath();
+        const progress = row / height;
+        const lx = offsetX * progress;
+        const rx = topW - offsetX * progress;
+        ctx.moveTo(lx, row);
+        ctx.lineTo(rx, row);
+        ctx.stroke();
     }
 
-    // Rim
-    ctx.fillStyle = '#8B4513';
-    ctx.fillRect(-2, height * 0.25, width + 4, height * 0.1);
+    // Weave pattern (vertical lines)
+    for (let col = width * 0.15; col < width * 0.85; col += width * 0.15) {
+        ctx.beginPath();
+        ctx.moveTo(col, 0);
+        const bottomCol = offsetX + (col / topW) * botW;
+        ctx.lineTo(bottomCol, height);
+        ctx.stroke();
+    }
 
-    // Opening (top, darker)
-    ctx.fillStyle = '#5C3A1E';
-    ctx.fillRect(2, height * 0.3, width - 4, height * 0.15);
+    // Rim (thick top edge)
+    ctx.fillStyle = '#8B4513';
+    ctx.beginPath();
+    ctx.roundRect(-3, -4, topW + 6, 8, 3);
+    ctx.fill();
 
     ctx.restore();
 }
 
 function drawHeart(ctx, x, y, size) {
-    const s = size / 8;
+    const cx = x + size / 2;
+    const cy = y + size / 2;
+    const r = size * 0.25;
     ctx.save();
-    ctx.translate(x, y);
     ctx.fillStyle = '#e94560';
-    ctx.fillRect(1*s, 0, 2*s, s);
-    ctx.fillRect(5*s, 0, 2*s, s);
-    ctx.fillRect(0, s, 4*s, s);
-    ctx.fillRect(4*s, s, 4*s, s);
-    ctx.fillRect(0, 2*s, 8*s, s);
-    ctx.fillRect(0, 3*s, 8*s, s);
-    ctx.fillRect(s, 4*s, 6*s, s);
-    ctx.fillRect(2*s, 5*s, 4*s, s);
-    ctx.fillRect(3*s, 6*s, 2*s, s);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + r * 1.5);
+    ctx.bezierCurveTo(cx - r * 2.5, cy - r * 0.5, cx - r * 1.2, cy - r * 2.2, cx, cy - r * 0.8);
+    ctx.bezierCurveTo(cx + r * 1.2, cy - r * 2.2, cx + r * 2.5, cy - r * 0.5, cx, cy + r * 1.5);
+    ctx.fill();
     ctx.restore();
 }
