@@ -271,6 +271,44 @@ function drawApple(ctx, x, y, size) {
     ctx.restore();
 }
 
+function drawPear(ctx, x, y, size) {
+    const cx = x + size / 2;
+    const cy = y + size / 2 + 2;
+    const r = size * 0.35;
+    ctx.save();
+
+    // Pear body (wider bottom, narrow top)
+    ctx.fillStyle = '#a8c256';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - r * 1.2);
+    ctx.bezierCurveTo(cx - r * 0.5, cy - r * 0.8, cx - r * 1.3, cy + r * 0.2, cx - r * 1.0, cy + r * 1.0);
+    ctx.bezierCurveTo(cx - r * 0.6, cy + r * 1.6, cx + r * 0.6, cy + r * 1.6, cx + r * 1.0, cy + r * 1.0);
+    ctx.bezierCurveTo(cx + r * 1.3, cy + r * 0.2, cx + r * 0.5, cy - r * 0.8, cx, cy - r * 1.2);
+    ctx.fill();
+
+    // Highlight
+    ctx.fillStyle = '#c4d97a';
+    ctx.beginPath();
+    ctx.ellipse(cx - r * 0.3, cy + r * 0.2, r * 0.25, r * 0.5, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Stem
+    ctx.strokeStyle = '#5C4033';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - r * 1.2);
+    ctx.lineTo(cx + 1, cy - r * 1.8);
+    ctx.stroke();
+
+    // Leaf
+    ctx.fillStyle = '#2ecc71';
+    ctx.beginPath();
+    ctx.ellipse(cx + r * 0.3, cy - r * 1.6, r * 0.35, r * 0.13, 0.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+}
+
 function drawBasket(ctx, x, y, width, height) {
     ctx.save();
     ctx.translate(x, y);

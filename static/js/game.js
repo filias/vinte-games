@@ -120,12 +120,14 @@ function update(timestamp) {
     }
     if (moved && Math.random() < 0.15) playMove();
 
-    // Spawn apples
+    // Spawn fruits
     if (timestamp - lastSpawn > spawnInterval) {
+        const fruit = Math.random() < 0.5 ? 'apple' : 'pear';
         apples.push({
             x: Math.random() * (CANVAS_W - APPLE_SIZE),
             y: -APPLE_SIZE,
             speed: speed + Math.random() * 0.5,
+            type: fruit,
         });
         lastSpawn = timestamp;
         spawnInterval = Math.max(SPAWN_INTERVAL_MIN, spawnInterval * SPAWN_INTERVAL_DECAY);
@@ -206,9 +208,13 @@ function draw() {
     // Draw basket on top of character's head
     drawBasket(ctx, basketX, charY - BASKET_H + 4, BASKET_W, BASKET_H);
 
-    // Draw apples
+    // Draw fruits
     for (const apple of apples) {
-        drawApple(ctx, apple.x, apple.y, APPLE_SIZE);
+        if (apple.type === 'pear') {
+            drawPear(ctx, apple.x, apple.y, APPLE_SIZE);
+        } else {
+            drawApple(ctx, apple.x, apple.y, APPLE_SIZE);
+        }
     }
 
     // Draw lives as hearts
