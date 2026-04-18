@@ -77,6 +77,7 @@ function setupCharacterSelect() {
 }
 
 function selectCharacter(char) {
+    initAudio();
     character = char;
     document.getElementById('char-select').style.display = 'none';
     document.getElementById('game-screen').style.display = 'block';
