@@ -69,6 +69,37 @@ canvas {
     justify-content: center;
 }
 
+.fruit-title {
+    margin-top: 2rem !important;
+}
+
+.fruit-options {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.fruit-option {
+    cursor: pointer;
+    text-align: center;
+    padding: 0.8rem;
+    border: 3px solid #0f3460;
+    border-radius: 8px;
+    background: #16213e;
+    transition: all 0.2s;
+    opacity: 0.5;
+}
+
+.fruit-option:hover {
+    border-color: #e94560;
+    opacity: 0.8;
+}
+
+.fruit-option.active {
+    border-color: #e94560;
+    opacity: 1;
+}
+
 .char-option {
     cursor: pointer;
     text-align: center;

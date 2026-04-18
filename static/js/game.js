@@ -13,6 +13,7 @@ const SPAWN_INTERVAL_DECAY = 0.997;
 
 let canvas, ctx;
 let character = null; // 'oto' or 'lujza'
+let fruitMode = 'apple'; // 'apple', 'pear', or 'both'
 let basketX;
 let apples = [];
 let score = 0;
@@ -74,6 +75,32 @@ function setupCharacterSelect() {
     lujzaCanvas.width = 64;
     lujzaCanvas.height = 64;
     drawLujza(lujzaCtx, 8, 8, 48);
+
+    // Draw fruit previews
+    const appleCanvas = document.getElementById('apple-preview');
+    const appleCtx2 = appleCanvas.getContext('2d');
+    appleCanvas.width = 48;
+    appleCanvas.height = 48;
+    drawApple(appleCtx2, 10, 10, 28);
+
+    const pearCanvas = document.getElementById('pear-preview');
+    const pearCtx = pearCanvas.getContext('2d');
+    pearCanvas.width = 48;
+    pearCanvas.height = 48;
+    drawPear(pearCtx, 10, 10, 28);
+
+    const bothCanvas = document.getElementById('both-preview');
+    const bothCtx = bothCanvas.getContext('2d');
+    bothCanvas.width = 48;
+    bothCanvas.height = 48;
+    drawApple(bothCtx, 2, 10, 24);
+    drawPear(bothCtx, 22, 10, 24);
+}
+
+function selectFruit(mode, el) {
+    fruitMode = mode;
+    document.querySelectorAll('.fruit-option').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
 }
 
 function selectCharacter(char) {
@@ -122,7 +149,7 @@ function update(timestamp) {
 
     // Spawn fruits
     if (timestamp - lastSpawn > spawnInterval) {
-        const fruit = Math.random() < 0.5 ? 'apple' : 'pear';
+        const fruit = fruitMode === 'both' ? (Math.random() < 0.5 ? 'apple' : 'pear') : fruitMode;
         apples.push({
             x: Math.random() * (CANVAS_W - APPLE_SIZE),
             y: -APPLE_SIZE,

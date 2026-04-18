@@ -24,6 +24,22 @@
                 <div class="subtitle">veverička</div>
             </div>
         </div>
+
+        <h2 class="fruit-title">Vyber si ovocie</h2>
+        <div class="fruit-options">
+            <div class="fruit-option active" onclick="selectFruit('apple', this)">
+                <canvas id="apple-preview"></canvas>
+                <div class="subtitle">jablká</div>
+            </div>
+            <div class="fruit-option" onclick="selectFruit('pear', this)">
+                <canvas id="pear-preview"></canvas>
+                <div class="subtitle">hrušky</div>
+            </div>
+            <div class="fruit-option" onclick="selectFruit('both', this)">
+                <canvas id="both-preview"></canvas>
+                <div class="subtitle">oboje</div>
+            </div>
+        </div>
     </div>
 
     <div id="game-screen">
