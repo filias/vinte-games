@@ -108,12 +108,16 @@ function gameLoop(timestamp) {
 function update(timestamp) {
     // Move basket with keyboard
     const moveSpeed = 6;
+    let moved = false;
     if (keys['ArrowLeft'] || keys['a']) {
         basketX = Math.max(0, basketX - moveSpeed);
+        moved = true;
     }
     if (keys['ArrowRight'] || keys['d']) {
         basketX = Math.min(CANVAS_W - BASKET_W, basketX + moveSpeed);
+        moved = true;
     }
+    if (moved && Math.random() < 0.15) playMove();
 
     // Spawn apples
     if (timestamp - lastSpawn > spawnInterval) {
@@ -143,6 +147,7 @@ function update(timestamp) {
             appleCenter < basketX + BASKET_W) {
             apples.splice(i, 1);
             score++;
+            playCatch();
             updateHUD();
             continue;
         }
@@ -151,6 +156,7 @@ function update(timestamp) {
         if (apple.y + APPLE_SIZE > CANVAS_H - GROUND_H) {
             apples.splice(i, 1);
             lives--;
+            playDrop();
             updateHUD();
             if (lives <= 0) {
                 endGame();
@@ -231,6 +237,7 @@ function updateHUD() {
 function endGame() {
     gameRunning = false;
     cancelAnimationFrame(animFrame);
+    playGameOver();
     document.getElementById('final-score').textContent = score;
     document.getElementById('game-over').style.display = 'block';
 }
