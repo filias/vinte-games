@@ -26,14 +26,14 @@ function playMove() {
     osc.connect(gain);
     gain.connect(ctx.destination);
 
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(200, ctx.currentTime);
-    osc.frequency.setValueAtTime(250, ctx.currentTime + 0.03);
-    gain.gain.setValueAtTime(0.08, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(440, ctx.currentTime);
+    osc.frequency.setValueAtTime(480, ctx.currentTime + 0.02);
+    gain.gain.setValueAtTime(0.04, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
 
     osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.06);
+    osc.stop(ctx.currentTime + 0.04);
 }
 
 function playCatch() {
