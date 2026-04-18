@@ -81,20 +81,20 @@ function setupCharacterSelect() {
     const appleCtx2 = appleCanvas.getContext('2d');
     appleCanvas.width = 48;
     appleCanvas.height = 48;
-    drawApple(appleCtx2, 10, 10, 28);
+    drawApple(appleCtx2, 10, 8, 28);
 
     const pearCanvas = document.getElementById('pear-preview');
     const pearCtx = pearCanvas.getContext('2d');
     pearCanvas.width = 48;
     pearCanvas.height = 48;
-    drawPear(pearCtx, 10, 10, 28);
+    drawPear(pearCtx, 10, 8, 28);
 
     const bothCanvas = document.getElementById('both-preview');
     const bothCtx = bothCanvas.getContext('2d');
-    bothCanvas.width = 48;
+    bothCanvas.width = 64;
     bothCanvas.height = 48;
-    drawApple(bothCtx, 2, 10, 24);
-    drawPear(bothCtx, 22, 10, 24);
+    drawApple(bothCtx, 2, 8, 28);
+    drawPear(bothCtx, 34, 8, 28);
 }
 
 function selectFruit(mode, el) {
