@@ -34,7 +34,11 @@ def deploy():
     if data.get("ref") != "refs/heads/main":
         return "not main", 200
 
-    subprocess.Popen(["bash", "-c", "cd /opt/vinte-games && git pull"])
+    subprocess.Popen([
+        "bash", "-c",
+        "cd /opt/vinte-games && git pull"
+        " && systemctl restart vinte-games",
+    ])
     return "deploying", 200
 
 
