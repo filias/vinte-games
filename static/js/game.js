@@ -284,7 +284,7 @@ async function submitScore() {
     if (!name) { nameInput.focus(); return; }
     localStorage.setItem('vinte-player-name', name);
     try {
-        await fetch('/api/scores', {
+        await fetch('api/scores', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({name, score, character, fruit: fruitMode}),
@@ -305,7 +305,7 @@ async function showLeaderboard() {
     document.getElementById('char-select').style.display = 'none';
     document.getElementById('leaderboard').style.display = 'block';
     try {
-        const resp = await fetch('/api/scores');
+        const resp = await fetch('api/scores');
         lbData = await resp.json();
     } catch (e) {
         lbData = {total: [], weekly: []};
