@@ -40,6 +40,8 @@
                 <div class="subtitle">oboje</div>
             </div>
         </div>
+
+        <button class="leaderboard-btn" onclick="showLeaderboard()">Rebríček</button>
     </div>
 
     <div id="game-screen">
@@ -52,9 +54,27 @@
         <div id="game-over">
             <h2>Koniec hry!</h2>
             <div class="score">Skóre: <span id="final-score">0</span></div>
+            <div id="name-input-area">
+                <input type="text" id="player-name" placeholder="Tvoje meno" maxlength="20"
+                    autocomplete="off" spellcheck="false">
+                <button onclick="submitScore()">Uložiť skóre</button>
+            </div>
+            <div id="score-saved" style="display:none">
+                <p class="saved-msg">Uložené!</p>
+            </div>
             <button onclick="restartGame()">Hrať znova</button>
             <button onclick="backToSelect()">Zmeniť postavu</button>
         </div>
+    </div>
+
+    <div id="leaderboard" style="display:none">
+        <h2>Rebríček</h2>
+        <div class="lb-tabs">
+            <button class="lb-tab active" onclick="switchTab('weekly', this)">Týždeň</button>
+            <button class="lb-tab" onclick="switchTab('total', this)">Celkovo</button>
+        </div>
+        <div id="lb-list"></div>
+        <button onclick="hideLeaderboard()">Späť</button>
     </div>
 
     <script src="static/js/sprites.js"></script>
@@ -62,4 +82,3 @@
     <script src="static/js/game.js"></script>
 </body>
 </html>
- 

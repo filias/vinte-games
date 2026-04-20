@@ -2,3 +2,8 @@
 static/*.pdf
 *.pdf
 .idea/
+__pycache__/
+*.py[cod]
+.venv/
+scores.db
+uv.lock

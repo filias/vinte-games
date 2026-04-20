@@ -269,7 +269,72 @@ function endGame() {
     cancelAnimationFrame(animFrame);
     playGameOver();
     document.getElementById('final-score').textContent = score;
+    document.getElementById('name-input-area').style.display = 'block';
+    document.getElementById('score-saved').style.display = 'none';
+    // Pre-fill name from last time
+    const savedName = localStorage.getItem('vinte-player-name') || '';
+    document.getElementById('player-name').value = savedName;
     document.getElementById('game-over').style.display = 'block';
+    if (savedName) document.getElementById('player-name').focus();
+}
+
+async function submitScore() {
+    const nameInput = document.getElementById('player-name');
+    const name = nameInput.value.trim();
+    if (!name) { nameInput.focus(); return; }
+    localStorage.setItem('vinte-player-name', name);
+    try {
+        await fetch('/api/scores', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name, score, character, fruit: fruitMode}),
+        });
+    } catch (e) {}
+    document.getElementById('name-input-area').style.display = 'none';
+    document.getElementById('score-saved').style.display = 'block';
+}
+
+let currentLbTab = 'weekly';
+let lbData = null;
+
+async function showLeaderboard() {
+    document.getElementById('char-select').style.display = 'none';
+    document.getElementById('leaderboard').style.display = 'block';
+    try {
+        const resp = await fetch('/api/scores');
+        lbData = await resp.json();
+    } catch (e) {
+        lbData = {total: [], weekly: []};
+    }
+    renderLeaderboard();
+}
+
+function hideLeaderboard() {
+    document.getElementById('leaderboard').style.display = 'none';
+    document.getElementById('char-select').style.display = 'block';
+}
+
+function switchTab(tab, btn) {
+    currentLbTab = tab;
+    document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    renderLeaderboard();
+}
+
+function renderLeaderboard() {
+    const list = document.getElementById('lb-list');
+    const data = lbData ? lbData[currentLbTab] : [];
+    if (!data || data.length === 0) {
+        list.innerHTML = '<p class="lb-empty">Zatiaľ žiadne skóre</p>';
+        return;
+    }
+    list.innerHTML = data.map((entry, i) =>
+        `<div class="lb-row">
+            <span class="lb-rank">${i + 1}.</span>
+            <span class="lb-name">${entry.name}</span>
+            <span class="lb-score">${entry.score}</span>
+        </div>`
+    ).join('');
 }
 
 function restartGame() {
