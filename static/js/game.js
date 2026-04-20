@@ -49,14 +49,7 @@ function initGame() {
     });
     canvas.addEventListener('touchend', () => touchStartX = null);
 
-    // Mouse control
-    canvas.addEventListener('mousemove', e => {
-        if (!gameRunning) return;
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const scale = CANVAS_W / rect.width;
-        basketX = Math.max(0, Math.min(CANVAS_W - BASKET_W, mouseX * scale - BASKET_W / 2));
-    });
+    // Mouse control disabled — use keyboard or touch
 
     setupCharacterSelect();
 }
