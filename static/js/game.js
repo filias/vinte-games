@@ -32,7 +32,10 @@ function initGame() {
     canvas.width = CANVAS_W;
     canvas.height = CANVAS_H;
 
-    document.addEventListener('keydown', e => keys[e.key] = true);
+    document.addEventListener('keydown', e => {
+        keys[e.key] = true;
+        if (e.key === 'Escape' && gameRunning) endGame();
+    });
     document.addEventListener('keyup', e => keys[e.key] = false);
 
     // Touch controls
