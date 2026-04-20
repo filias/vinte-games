@@ -292,6 +292,10 @@ async function submitScore() {
     } catch (e) {}
     document.getElementById('name-input-area').style.display = 'none';
     document.getElementById('score-saved').style.display = 'block';
+    // Show leaderboard after saving
+    document.getElementById('game-over').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'none';
+    await showLeaderboard();
 }
 
 let currentLbTab = 'weekly';
