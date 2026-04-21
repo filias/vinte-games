@@ -27,7 +27,7 @@
 
         <h2 class="fruit-title">Vyber si ovocie</h2>
         <div class="fruit-options">
-            <div class="fruit-option active" onclick="selectFruit('apple', this)">
+            <div class="fruit-option" onclick="selectFruit('apple', this)">
                 <canvas id="apple-preview"></canvas>
                 <div class="subtitle">jablká</div>
             </div>
@@ -35,9 +35,21 @@
                 <canvas id="pear-preview"></canvas>
                 <div class="subtitle">hrušky</div>
             </div>
-            <div class="fruit-option" onclick="selectFruit('both', this)">
-                <canvas id="both-preview"></canvas>
-                <div class="subtitle">oboje</div>
+            <div class="fruit-option" onclick="selectFruit('orange', this)">
+                <canvas id="orange-preview"></canvas>
+                <div class="subtitle">pomaranče</div>
+            </div>
+            <div class="fruit-option" onclick="selectFruit('banana', this)">
+                <canvas id="banana-preview"></canvas>
+                <div class="subtitle">banány</div>
+            </div>
+            <div class="fruit-option" onclick="selectFruit('grapes', this)">
+                <canvas id="grapes-preview"></canvas>
+                <div class="subtitle">hrozno</div>
+            </div>
+            <div class="fruit-option active" onclick="selectFruit('all', this)">
+                <canvas id="all-preview"></canvas>
+                <div class="subtitle">všetko</div>
             </div>
         </div>
 

@@ -13,7 +13,7 @@ const SPAWN_INTERVAL_DECAY = 0.997;
 
 let canvas, ctx;
 let character = null; // 'oto' or 'lujza'
-let fruitMode = 'apple'; // 'apple', 'pear', or 'both'
+let fruitMode = 'all';
 let basketX;
 let apples = [];
 let score = 0;
@@ -79,18 +79,29 @@ function setupCharacterSelect() {
     appleCanvas.height = 48;
     drawApple(appleCtx2, 10, 8, 28);
 
-    const pearCanvas = document.getElementById('pear-preview');
-    const pearCtx = pearCanvas.getContext('2d');
-    pearCanvas.width = 48;
-    pearCanvas.height = 48;
-    drawPear(pearCtx, 10, 8, 28);
+    // Draw all fruit previews
+    const previews = {
+        'pear-preview': drawPear,
+        'orange-preview': drawOrange,
+        'banana-preview': drawBanana,
+        'grapes-preview': drawGrapes,
+    };
+    for (const [id, drawFn] of Object.entries(previews)) {
+        const c = document.getElementById(id);
+        const cx = c.getContext('2d');
+        c.width = 48;
+        c.height = 48;
+        drawFn(cx, 10, 8, 28);
+    }
 
-    const bothCanvas = document.getElementById('both-preview');
-    const bothCtx = bothCanvas.getContext('2d');
-    bothCanvas.width = 64;
-    bothCanvas.height = 48;
-    drawApple(bothCtx, 2, 8, 28);
-    drawPear(bothCtx, 34, 8, 28);
+    // "All" preview — show a few fruits
+    const allCanvas = document.getElementById('all-preview');
+    const allCtx = allCanvas.getContext('2d');
+    allCanvas.width = 48;
+    allCanvas.height = 48;
+    drawApple(allCtx, 2, 4, 20);
+    drawOrange(allCtx, 24, 4, 20);
+    drawGrapes(allCtx, 13, 24, 20);
 }
 
 function selectFruit(mode, el) {
@@ -145,7 +156,8 @@ function update(timestamp) {
 
     // Spawn fruits
     if (timestamp - lastSpawn > spawnInterval) {
-        const fruit = fruitMode === 'both' ? (Math.random() < 0.5 ? 'apple' : 'pear') : fruitMode;
+        const allFruits = ['apple', 'pear', 'orange', 'banana', 'grapes'];
+        const fruit = fruitMode === 'all' ? allFruits[Math.floor(Math.random() * allFruits.length)] : fruitMode;
         apples.push({
             x: Math.random() * (CANVAS_W - APPLE_SIZE),
             y: -APPLE_SIZE,
@@ -232,12 +244,12 @@ function draw() {
     drawBasket(ctx, basketX, charY - BASKET_H + 4, BASKET_W, BASKET_H);
 
     // Draw fruits
-    for (const apple of apples) {
-        if (apple.type === 'pear') {
-            drawPear(ctx, apple.x, apple.y, APPLE_SIZE);
-        } else {
-            drawApple(ctx, apple.x, apple.y, APPLE_SIZE);
-        }
+    const fruitDrawers = {
+        apple: drawApple, pear: drawPear, orange: drawOrange,
+        banana: drawBanana, grapes: drawGrapes,
+    };
+    for (const f of apples) {
+        (fruitDrawers[f.type] || drawApple)(ctx, f.x, f.y, APPLE_SIZE);
     }
 
     // Draw lives as hearts
