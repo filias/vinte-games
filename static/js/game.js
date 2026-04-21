@@ -44,8 +44,15 @@ function initGame() {
     if (leftBtn && rightBtn) {
         leftBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowLeft'] = true; });
         leftBtn.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowLeft'] = false; });
+        leftBtn.addEventListener('touchcancel', e => { keys['ArrowLeft'] = false; });
         rightBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowRight'] = true; });
         rightBtn.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowRight'] = false; });
+        rightBtn.addEventListener('touchcancel', e => { keys['ArrowRight'] = false; });
+        // Safety: clear both when any touch ends outside buttons
+        document.addEventListener('touchend', () => {
+            if (!leftBtn.matches(':active')) keys['ArrowLeft'] = false;
+            if (!rightBtn.matches(':active')) keys['ArrowRight'] = false;
+        });
     }
 
     setupCharacterSelect();
