@@ -353,40 +353,40 @@ function drawOrange(ctx, x, y, size) {
 function drawBanana(ctx, x, y, size) {
     const cx = x + size / 2;
     const cy = y + size / 2;
-    const r = size * 0.38;
+    const r = size * 0.48;
     ctx.save();
 
     // Banana 1 (back)
-    ctx.fillStyle = '#f4d03f';
+    ctx.fillStyle = '#e8c520';
     ctx.beginPath();
-    ctx.moveTo(cx - r * 0.6, cy - r * 0.8);
-    ctx.bezierCurveTo(cx - r * 1.2, cy + r * 0.2, cx - r * 0.4, cy + r * 1.2, cx + r * 0.3, cy + r * 0.8);
-    ctx.bezierCurveTo(cx + r * 0.1, cy + r * 0.6, cx - r * 0.8, cy + r * 0.0, cx - r * 0.3, cy - r * 0.7);
+    ctx.moveTo(cx - r * 0.7, cy - r * 0.9);
+    ctx.bezierCurveTo(cx - r * 1.3, cy + r * 0.2, cx - r * 0.5, cy + r * 1.3, cx + r * 0.4, cy + r * 0.9);
+    ctx.bezierCurveTo(cx + r * 0.2, cy + r * 0.7, cx - r * 0.9, cy + r * 0.0, cx - r * 0.4, cy - r * 0.8);
     ctx.closePath();
     ctx.fill();
 
     // Banana 2 (middle)
-    ctx.fillStyle = '#f7dc6f';
+    ctx.fillStyle = '#f4d03f';
     ctx.beginPath();
-    ctx.moveTo(cx - r * 0.2, cy - r * 0.9);
-    ctx.bezierCurveTo(cx - r * 0.9, cy + r * 0.3, cx - r * 0.1, cy + r * 1.3, cx + r * 0.6, cy + r * 0.7);
-    ctx.bezierCurveTo(cx + r * 0.4, cy + r * 0.5, cx - r * 0.5, cy + r * 0.1, cx + r * 0.0, cy - r * 0.8);
+    ctx.moveTo(cx - r * 0.3, cy - r * 1.0);
+    ctx.bezierCurveTo(cx - r * 1.0, cy + r * 0.3, cx - r * 0.2, cy + r * 1.4, cx + r * 0.7, cy + r * 0.8);
+    ctx.bezierCurveTo(cx + r * 0.5, cy + r * 0.6, cx - r * 0.6, cy + r * 0.1, cx - r * 0.05, cy - r * 0.9);
     ctx.closePath();
     ctx.fill();
 
     // Banana 3 (front)
     ctx.fillStyle = '#f9e154';
     ctx.beginPath();
-    ctx.moveTo(cx + r * 0.2, cy - r * 0.85);
-    ctx.bezierCurveTo(cx - r * 0.5, cy + r * 0.4, cx + r * 0.2, cy + r * 1.3, cx + r * 0.9, cy + r * 0.5);
-    ctx.bezierCurveTo(cx + r * 0.7, cy + r * 0.3, cx - r * 0.1, cy + r * 0.2, cx + r * 0.4, cy - r * 0.75);
+    ctx.moveTo(cx + r * 0.15, cy - r * 0.95);
+    ctx.bezierCurveTo(cx - r * 0.6, cy + r * 0.4, cx + r * 0.15, cy + r * 1.4, cx + r * 1.0, cy + r * 0.6);
+    ctx.bezierCurveTo(cx + r * 0.8, cy + r * 0.4, cx - r * 0.2, cy + r * 0.2, cx + r * 0.35, cy - r * 0.85);
     ctx.closePath();
     ctx.fill();
 
     // Stem top
     ctx.fillStyle = '#8B6914';
     ctx.beginPath();
-    ctx.arc(cx, cy - r * 0.85, r * 0.2, 0, Math.PI * 2);
+    ctx.arc(cx - r * 0.1, cy - r * 0.95, r * 0.22, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.restore();
@@ -412,22 +412,20 @@ function drawGrapes(ctx, x, y, size) {
     ctx.ellipse(cx + r * 1.5, cy - r * 6.5, r * 1.5, r * 0.6, 0.3, 0, Math.PI * 2);
     ctx.fill();
 
-    // Grape cluster (pyramid shape)
+    // Grape cluster (inverted pyramid — wide top, narrow bottom)
     const grapeColor = '#8e44ad';
     const highlight = '#a569bd';
     const positions = [
-        // Top row (1)
-        [0, -4],
-        // Second row (2)
-        [-1, -2.5], [1, -2.5],
+        // Top row (4 — widest)
+        [-3, -3.5], [-1, -3.5], [1, -3.5], [3, -3.5],
+        // Second row (3)
+        [-2, -2], [0, -2], [2, -2],
         // Third row (3)
-        [-2, -1], [0, -1], [2, -1],
-        // Fourth row (3)
-        [-1, 0.5], [1, 0.5],
-        // Bottom (2)
-        [-2, 2], [0, 2], [2, 2],
-        // Very bottom (1)
-        [-1, 3.5], [1, 3.5],
+        [-2.5, -0.5], [-0.5, -0.5], [1.5, -0.5],
+        // Fourth row (2)
+        [-1, 1], [1, 1],
+        // Bottom (1)
+        [0, 2.5],
     ];
 
     for (const [dx, dy] of positions) {
