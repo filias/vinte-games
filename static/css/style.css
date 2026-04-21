@@ -262,6 +262,16 @@ canvas {
     text-align: right;
 }
 
+.lb-highlight {
+    background: #0f3460;
+    border-radius: 4px;
+    color: #e94560;
+}
+
+.lb-highlight .lb-name {
+    color: #e94560;
+}
+
 .lb-empty {
     color: #555;
     font-size: 0.6rem;

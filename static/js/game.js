@@ -277,18 +277,33 @@ function updateHUD() {
     document.getElementById('lives').textContent = '❤'.repeat(lives);
 }
 
-function endGame() {
+async function endGame() {
     gameRunning = false;
     cancelAnimationFrame(animFrame);
     playGameOver();
     document.getElementById('final-score').textContent = score;
-    document.getElementById('name-input-area').style.display = 'block';
+
+    // Check if score makes top 10
+    let isTopTen = false;
+    try {
+        const resp = await fetch('api/scores');
+        const data = await resp.json();
+        const topScores = data.total || [];
+        isTopTen = topScores.length < 10 || score > (topScores[topScores.length - 1]?.score || 0);
+    } catch (e) {
+        isTopTen = true; // If we can't check, let them save
+    }
+
+    if (isTopTen && score > 0) {
+        document.getElementById('name-input-area').style.display = 'block';
+        const savedName = localStorage.getItem('vinte-player-name') || '';
+        document.getElementById('player-name').value = savedName;
+        if (savedName) document.getElementById('player-name').focus();
+    } else {
+        document.getElementById('name-input-area').style.display = 'none';
+    }
     document.getElementById('score-saved').style.display = 'none';
-    // Pre-fill name from last time
-    const savedName = localStorage.getItem('vinte-player-name') || '';
-    document.getElementById('player-name').value = savedName;
     document.getElementById('game-over').style.display = 'block';
-    if (savedName) document.getElementById('player-name').focus();
 }
 
 async function submitScore() {
@@ -303,9 +318,7 @@ async function submitScore() {
             body: JSON.stringify({name, score, character, fruit: fruitMode}),
         });
     } catch (e) {}
-    document.getElementById('name-input-area').style.display = 'none';
-    document.getElementById('score-saved').style.display = 'block';
-    // Show leaderboard after saving
+    // Go straight to leaderboard
     document.getElementById('game-over').style.display = 'none';
     document.getElementById('game-screen').style.display = 'none';
     await showLeaderboard();
@@ -345,13 +358,18 @@ function renderLeaderboard() {
         list.innerHTML = '<p class="lb-empty">Zatiaľ žiadne skóre</p>';
         return;
     }
-    list.innerHTML = data.map((entry, i) =>
-        `<div class="lb-row">
+    const playerName = localStorage.getItem('vinte-player-name') || '';
+    let highlighted = false;
+    list.innerHTML = data.map((entry, i) => {
+        // Highlight the most recent entry matching the player's name and current score
+        const isPlayer = !highlighted && entry.name === playerName && entry.score === score;
+        if (isPlayer) highlighted = true;
+        return `<div class="lb-row${isPlayer ? ' lb-highlight' : ''}">
             <span class="lb-rank">${i + 1}.</span>
             <span class="lb-name">${entry.name}</span>
             <span class="lb-score">${entry.score}</span>
-        </div>`
-    ).join('');
+        </div>`;
+    }).join('');
 }
 
 function restartGame() {
