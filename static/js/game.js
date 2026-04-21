@@ -38,21 +38,15 @@ function initGame() {
     });
     document.addEventListener('keyup', e => keys[e.key] = false);
 
-    // Touch controls
-    canvas.addEventListener('touchstart', e => {
-        e.preventDefault();
-        touchStartX = e.touches[0].clientX;
-    });
-    canvas.addEventListener('touchmove', e => {
-        e.preventDefault();
-        const rect = canvas.getBoundingClientRect();
-        const touchX = e.touches[0].clientX - rect.left;
-        const scale = CANVAS_W / rect.width;
-        basketX = Math.max(0, Math.min(CANVAS_W - BASKET_W, touchX * scale - BASKET_W / 2));
-    });
-    canvas.addEventListener('touchend', () => touchStartX = null);
-
-    // Mouse control disabled — use keyboard or touch
+    // On-screen arrow buttons for mobile
+    const leftBtn = document.getElementById('btn-left');
+    const rightBtn = document.getElementById('btn-right');
+    if (leftBtn && rightBtn) {
+        leftBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowLeft'] = true; });
+        leftBtn.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowLeft'] = false; });
+        rightBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowRight'] = true; });
+        rightBtn.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowRight'] = false; });
+    }
 
     setupCharacterSelect();
 }
