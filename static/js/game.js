@@ -14,6 +14,7 @@ const SPAWN_INTERVAL_DECAY = 0.997;
 let canvas, ctx;
 let character = null; // 'oto' or 'lujza'
 let fruitMode = 'all';
+let highScore = parseInt(localStorage.getItem('vinte-high-score') || '0');
 let basketX;
 let apples = [];
 let score = 0;
@@ -273,7 +274,11 @@ function drawCloud(ctx, x, y, size) {
 }
 
 function updateHUD() {
-    document.getElementById('score').textContent = score;
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('vinte-high-score', highScore);
+    }
+    document.getElementById('high-score').textContent = highScore;
     document.getElementById('lives').textContent = '❤'.repeat(lives);
 }
 
@@ -289,7 +294,7 @@ async function endGame() {
         const resp = await fetch('api/scores');
         const data = await resp.json();
         const topScores = data.total || [];
-        isTopTen = topScores.length < 10 || score > (topScores[topScores.length - 1]?.score || 0);
+        isTopTen = topScores.length < 15 || score > (topScores[topScores.length - 1]?.score || 0);
     } catch (e) {
         isTopTen = true; // If we can't check, let them save
     }

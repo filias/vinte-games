@@ -55,15 +55,17 @@ def submit_score():
 @app.route("/api/scores")
 def get_scores():
     db = get_db()
-    # All time top 10
+    # All time top 15
     total = db.execute(
-        "SELECT name, score, character, created_at FROM scores ORDER BY score DESC LIMIT 10"
+        "SELECT name, score, character, created_at FROM scores ORDER BY score DESC LIMIT 15"
     ).fetchall()
-    # Weekly top 10
-    week_ago = (datetime.utcnow() - timedelta(days=7)).isoformat()
+    # Weekly top 15 (week starts Monday 00:00 UTC)
+    now = datetime.utcnow()
+    monday = now - timedelta(days=now.weekday())
+    week_start = monday.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
     weekly = db.execute(
-        "SELECT name, score, character, created_at FROM scores WHERE created_at >= ? ORDER BY score DESC LIMIT 10",
-        (week_ago,),
+        "SELECT name, score, character, created_at FROM scores WHERE created_at >= ? ORDER BY score DESC LIMIT 15",
+        (week_start,),
     ).fetchall()
     db.close()
     return jsonify(
