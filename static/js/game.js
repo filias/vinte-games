@@ -14,7 +14,7 @@ const SPAWN_INTERVAL_DECAY = 0.997;
 let canvas, ctx;
 let character = null; // 'oto' or 'lujza'
 let fruitMode = 'all';
-let highScore = parseInt(localStorage.getItem('vinte-high-score') || '0');
+let highScore = 0;
 let basketX;
 let apples = [];
 let score = 0;
@@ -57,6 +57,18 @@ function initGame() {
     }
 
     setupCharacterSelect();
+    fetchHighScore();
+}
+
+async function fetchHighScore() {
+    try {
+        const resp = await fetch('api/scores');
+        const data = await resp.json();
+        if (data.total && data.total.length > 0) {
+            highScore = data.total[0].score;
+            document.getElementById('high-score').textContent = highScore;
+        }
+    } catch (e) {}
 }
 
 function setupCharacterSelect() {
@@ -274,10 +286,6 @@ function drawCloud(ctx, x, y, size) {
 }
 
 function updateHUD() {
-    if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('vinte-high-score', highScore);
-    }
     document.getElementById('high-score').textContent = highScore;
     document.getElementById('lives').textContent = '❤'.repeat(lives);
 }
@@ -288,22 +296,39 @@ async function endGame() {
     playGameOver();
     document.getElementById('final-score').textContent = score;
 
-    // Check if score makes top 10
-    let isTopTen = false;
+    // Check if score makes top 15
+    let isTop = false;
     try {
         const resp = await fetch('api/scores');
         const data = await resp.json();
         const topScores = data.total || [];
-        isTopTen = topScores.length < 15 || score > (topScores[topScores.length - 1]?.score || 0);
+        isTop = topScores.length < 15 || score > (topScores[topScores.length - 1]?.score || 0);
     } catch (e) {
-        isTopTen = true; // If we can't check, let them save
+        isTop = true;
     }
 
-    if (isTopTen && score > 0) {
-        document.getElementById('name-input-area').style.display = 'block';
+    if (isTop && score > 0) {
+        // Auto-submit if we have a saved name, otherwise ask
         const savedName = localStorage.getItem('vinte-player-name') || '';
-        document.getElementById('player-name').value = savedName;
-        if (savedName) document.getElementById('player-name').focus();
+        if (savedName) {
+            document.getElementById('name-input-area').style.display = 'none';
+            // Submit and go to leaderboard
+            try {
+                await fetch('api/scores', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name: savedName, score, character, fruit: fruitMode}),
+                });
+            } catch (e) {}
+            if (score > highScore) highScore = score;
+            document.getElementById('game-over').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'none';
+            await showLeaderboard();
+            return;
+        }
+        document.getElementById('name-input-area').style.display = 'block';
+        document.getElementById('player-name').value = '';
+        document.getElementById('player-name').focus();
     } else {
         document.getElementById('name-input-area').style.display = 'none';
     }
@@ -323,6 +348,7 @@ async function submitScore() {
             body: JSON.stringify({name, score, character, fruit: fruitMode}),
         });
     } catch (e) {}
+    if (score > highScore) highScore = score;
     // Go straight to leaderboard
     document.getElementById('game-over').style.display = 'none';
     document.getElementById('game-screen').style.display = 'none';
