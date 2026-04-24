@@ -29,11 +29,17 @@ def get_db():
 
 
 @app.route("/")
-def index():
+def home():
+    return send_from_directory(".", "home.html")
+
+
+@app.route("/jablka/")
+def jablka():
     return send_from_directory(".", "index.html")
 
 
 @app.route("/api/scores", methods=["POST"])
+@app.route("/jablka/api/scores", methods=["POST"])
 def submit_score():
     data = request.json
     name = data.get("name", "").strip()[:20]
@@ -53,6 +59,7 @@ def submit_score():
 
 
 @app.route("/api/scores")
+@app.route("/jablka/api/scores")
 def get_scores():
     db = get_db()
     # All time top 15
@@ -74,6 +81,11 @@ def get_scores():
             "weekly": [dict(r) for r in weekly],
         }
     )
+
+
+@app.route("/jablka/static/<path:filename>")
+def jablka_static(filename):
+    return send_from_directory("static", filename)
 
 
 if __name__ == "__main__":
