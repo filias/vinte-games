@@ -9,7 +9,10 @@
 </head>
 <body>
     <h1>Chytaj Jablká</h1>
-    <p class="subtitle">hra s Otom a Lujzou</p>
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+        <p class="subtitle" style="margin:0">hra s Otom a Lujzou</p>
+        <button class="leaderboard-btn" onclick="showLeaderboard()" style="margin:0; font-size:0.55rem; padding:0.4rem 0.8rem;">🏆 Rebríček</button>
+    </div>
 
     <div id="char-select">
         <h2>Vyber si postavu</h2>
@@ -90,7 +93,6 @@
             </div>
         </div>
 
-        <button class="leaderboard-btn" onclick="showLeaderboard()">Rebríček</button>
     </div>
 
     <div id="game-screen">
