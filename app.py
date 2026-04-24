@@ -48,6 +48,11 @@ def clock():
     return send_from_directory(".", "clock.html")
 
 
+@app.route("/bricks/")
+def bricks():
+    return send_from_directory(".", "bricks.html")
+
+
 @app.route("/api/scores", methods=["POST"])
 @app.route("/apples/api/scores", methods=["POST"])
 def submit_score():
