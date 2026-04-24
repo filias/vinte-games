@@ -73,7 +73,7 @@
 
     <script>
     const W = 480, H = 600;
-    const PADDLE_W = 80, PADDLE_H = 12, PADDLE_Y = H - 30;
+    const PADDLE_W = 100, PADDLE_H = 30, PADDLE_Y = H - 40;
     const BALL_R = 6;
     const BRICK_ROWS = 6, BRICK_COLS = 10;
     const BRICK_W = W / BRICK_COLS - 2, BRICK_H = 18;
@@ -168,10 +168,10 @@
         if (ballX + BALL_R >= W) { ballX = W - BALL_R; ballDX = -Math.abs(ballDX); }
         if (ballY - BALL_R <= 0) { ballY = BALL_R; ballDY = Math.abs(ballDY); }
 
-        // Paddle collision
+        // Paddle collision (ball hits top of flag area)
         if (ballDY > 0 &&
             ballY + BALL_R >= PADDLE_Y &&
-            ballY + BALL_R <= PADDLE_Y + PADDLE_H + 4 &&
+            ballY + BALL_R <= PADDLE_Y + 10 &&
             ballX >= paddleX && ballX <= paddleX + PADDLE_W) {
             ballDY = -Math.abs(ballDY);
             // Angle based on where ball hits paddle
@@ -239,14 +239,69 @@
             ctx.fillRect(b.x + 2, b.y + 2, b.w - 4, b.h / 3);
         }
 
-        // Paddle
-        ctx.fillStyle = '#e0e0e0';
+        // Paddle: Oto and Lujza holding a Slovak flag
+        const px = paddleX;
+        const py = PADDLE_Y;
+        const charW = 20;
+        const flagX = px + charW;
+        const flagW = PADDLE_W - charW * 2;
+        const flagH = PADDLE_H - 4;
+        const flagY = py + 2;
+
+        // Slovak flag (white, blue, red horizontal stripes)
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(flagX, flagY, flagW, flagH / 3);
+        ctx.fillStyle = '#0b4ea2';
+        ctx.fillRect(flagX, flagY + flagH / 3, flagW, flagH / 3);
+        ctx.fillStyle = '#ee1c25';
+        ctx.fillRect(flagX, flagY + flagH * 2 / 3, flagW, flagH / 3);
+        // Flag border
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(flagX, flagY, flagW, flagH);
+
+        // Oto (left side, small hedgehog)
+        // Body
+        ctx.fillStyle = '#4a3728';
         ctx.beginPath();
-        ctx.roundRect(paddleX, PADDLE_Y, PADDLE_W, PADDLE_H, 4);
+        ctx.arc(px + charW / 2, py + PADDLE_H / 2 - 2, 9, Math.PI, 0);
         ctx.fill();
-        // Paddle highlight
-        ctx.fillStyle = 'rgba(255,255,255,0.2)';
-        ctx.fillRect(paddleX + 3, PADDLE_Y + 2, PADDLE_W - 6, PADDLE_H / 3);
+        ctx.fillStyle = '#F5DEB3';
+        ctx.beginPath();
+        ctx.arc(px + charW / 2, py + PADDLE_H / 2 + 1, 7, 0, Math.PI);
+        ctx.fill();
+        // Eyes
+        ctx.fillStyle = '#000';
+        ctx.fillRect(px + charW / 2 - 4, py + PADDLE_H / 2 - 1, 2, 2);
+        ctx.fillRect(px + charW / 2 + 2, py + PADDLE_H / 2 - 1, 2, 2);
+        // Nose
+        ctx.fillRect(px + charW / 2 - 1, py + PADDLE_H / 2 + 2, 2, 2);
+
+        // Lujza (right side, small squirrel)
+        const lx = px + PADDLE_W - charW / 2;
+        // Tail
+        ctx.fillStyle = '#D2691E';
+        ctx.beginPath();
+        ctx.arc(lx + 5, py + PADDLE_H / 2 - 6, 5, 0, Math.PI * 2);
+        ctx.fill();
+        // Body
+        ctx.fillStyle = '#CD853F';
+        ctx.beginPath();
+        ctx.arc(lx, py + PADDLE_H / 2, 8, 0, Math.PI * 2);
+        ctx.fill();
+        // Face
+        ctx.fillStyle = '#F5DEB3';
+        ctx.beginPath();
+        ctx.arc(lx, py + PADDLE_H / 2 + 1, 5, 0, Math.PI);
+        ctx.fill();
+        // Ears
+        ctx.fillStyle = '#B8651A';
+        ctx.fillRect(lx - 6, py + PADDLE_H / 2 - 9, 3, 5);
+        ctx.fillRect(lx + 3, py + PADDLE_H / 2 - 9, 3, 5);
+        // Eyes
+        ctx.fillStyle = '#000';
+        ctx.fillRect(lx - 4, py + PADDLE_H / 2 - 1, 2, 2);
+        ctx.fillRect(lx + 2, py + PADDLE_H / 2 - 1, 2, 2);
 
         // Ball
         ctx.fillStyle = '#fff';
