@@ -51,11 +51,41 @@
         }
         #mobile-controls button:active { background: #e94560; border-color: #e94560; }
         @media (pointer: coarse) { #mobile-controls { display: flex; } }
+        .opt.active { border-color: #e94560 !important; }
     </style>
 </head>
 <body>
     <a href="/" class="back">&larr; hry</a>
     <h1>Múr</h1>
+
+    <div id="options" style="display:flex; gap:1rem; margin-bottom:0.5rem; flex-wrap:wrap; justify-content:center;">
+        <div style="text-align:center;">
+            <div style="font-size:0.4rem; color:#888; margin-bottom:0.3rem;">pálka</div>
+            <div style="display:flex; gap:0.3rem;">
+                <button class="opt active" data-group="paddle" onclick="setPaddle('wood',this)" style="background:#A0522D;width:28px;height:14px;border:2px solid #0f3460;border-radius:3px;cursor:pointer;"></button>
+                <button class="opt" data-group="paddle" onclick="setPaddle('metal',this)" style="background:#888;width:28px;height:14px;border:2px solid #0f3460;border-radius:3px;cursor:pointer;"></button>
+                <button class="opt" data-group="paddle" onclick="setPaddle('neon',this)" style="background:#0ff;width:28px;height:14px;border:2px solid #0f3460;border-radius:3px;cursor:pointer;"></button>
+            </div>
+        </div>
+        <div style="text-align:center;">
+            <div style="font-size:0.4rem; color:#888; margin-bottom:0.3rem;">lopta</div>
+            <div style="display:flex; gap:0.3rem;">
+                <button class="opt active" data-group="ball" onclick="setBall('white',this)" style="background:#fff;width:16px;height:16px;border:2px solid #0f3460;border-radius:50%;cursor:pointer;"></button>
+                <button class="opt" data-group="ball" onclick="setBall('red',this)" style="background:#e94560;width:16px;height:16px;border:2px solid #0f3460;border-radius:50%;cursor:pointer;"></button>
+                <button class="opt" data-group="ball" onclick="setBall('yellow',this)" style="background:#f4d03f;width:16px;height:16px;border:2px solid #0f3460;border-radius:50%;cursor:pointer;"></button>
+                <button class="opt" data-group="ball" onclick="setBall('cyan',this)" style="background:#0ff;width:16px;height:16px;border:2px solid #0f3460;border-radius:50%;cursor:pointer;"></button>
+            </div>
+        </div>
+        <div style="text-align:center;">
+            <div style="font-size:0.4rem; color:#888; margin-bottom:0.3rem;">pozadie</div>
+            <div style="display:flex; gap:0.3rem;">
+                <button class="opt active" data-group="bg" onclick="setBg('dark',this)" style="background:#16213e;width:20px;height:14px;border:2px solid #0f3460;border-radius:3px;cursor:pointer;"></button>
+                <button class="opt" data-group="bg" onclick="setBg('space',this)" style="background:#0a0a1a;width:20px;height:14px;border:2px solid #0f3460;border-radius:3px;cursor:pointer;"></button>
+                <button class="opt" data-group="bg" onclick="setBg('green',this)" style="background:#1a3a1a;width:20px;height:14px;border:2px solid #0f3460;border-radius:3px;cursor:pointer;"></button>
+            </div>
+        </div>
+    </div>
+
     <div id="hud">
         <div>Skóre: <span id="score">0</span></div>
         <div>Životy: <span id="lives">❤❤❤</span></div>
@@ -73,7 +103,7 @@
 
     <script>
     const W = 480, H = 600;
-    const PADDLE_W = 100, PADDLE_H = 30, PADDLE_Y = H - 40;
+    const PADDLE_W = 80, PADDLE_H = 14, PADDLE_Y = H - 30;
     const BALL_R = 6;
     const BRICK_ROWS = 6, BRICK_COLS = 10;
     const BRICK_W = W / BRICK_COLS - 2, BRICK_H = 18;
@@ -89,6 +119,25 @@
     let paddleX, ballX, ballY, ballDX, ballDY;
     let bricks, score, lives, running, animFrame;
     let keys = {};
+    let paddleStyle = 'wood';
+    let ballColor = 'white';
+    let bgStyle = 'dark';
+
+    const PADDLE_STYLES = {
+        wood: { fill: '#A0522D', highlight: '#CD853F', stripe: '#8B4513' },
+        metal: { fill: '#777', highlight: '#aaa', stripe: '#555' },
+        neon: { fill: '#0ff', highlight: '#7fffff', stripe: '#00aaaa' },
+    };
+    const BALL_COLORS = { white: '#fff', red: '#e94560', yellow: '#f4d03f', cyan: '#0ff' };
+    const BG_STYLES = { dark: '#16213e', space: '#0a0a1a', green: '#1a3a1a' };
+
+    function setPaddle(s, el) { paddleStyle = s; selectOpt(el, 'paddle'); }
+    function setBall(s, el) { ballColor = s; selectOpt(el, 'ball'); }
+    function setBg(s, el) { bgStyle = s; selectOpt(el, 'bg'); }
+    function selectOpt(el, group) {
+        document.querySelectorAll(`.opt[data-group="${group}"]`).forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+    }
 
     document.addEventListener('keydown', e => {
         keys[e.key] = true;
@@ -168,10 +217,10 @@
         if (ballX + BALL_R >= W) { ballX = W - BALL_R; ballDX = -Math.abs(ballDX); }
         if (ballY - BALL_R <= 0) { ballY = BALL_R; ballDY = Math.abs(ballDY); }
 
-        // Paddle collision (ball hits top of flag area)
+        // Paddle collision
         if (ballDY > 0 &&
             ballY + BALL_R >= PADDLE_Y &&
-            ballY + BALL_R <= PADDLE_Y + 10 &&
+            ballY + BALL_R <= PADDLE_Y + PADDLE_H + 4 &&
             ballX >= paddleX && ballX <= paddleX + PADDLE_W) {
             ballDY = -Math.abs(ballDY);
             // Angle based on where ball hits paddle
@@ -224,8 +273,14 @@
 
     function draw() {
         // Background
-        ctx.fillStyle = '#16213e';
+        ctx.fillStyle = BG_STYLES[bgStyle] || BG_STYLES.dark;
         ctx.fillRect(0, 0, W, H);
+        if (bgStyle === 'space') {
+            ctx.fillStyle = '#fff';
+            for (let i = 0; i < 30; i++) {
+                ctx.fillRect((i * 97 + 13) % W, (i * 53 + 7) % H, 1.5, 1.5);
+            }
+        }
 
         // Bricks
         for (const b of bricks) {
@@ -239,80 +294,32 @@
             ctx.fillRect(b.x + 2, b.y + 2, b.w - 4, b.h / 3);
         }
 
-        // Paddle: Oto and Lujza holding a Slovak flag
-        const px = paddleX;
-        const py = PADDLE_Y;
-        const charW = 20;
-        const flagX = px + charW;
-        const flagW = PADDLE_W - charW * 2;
-        const flagH = PADDLE_H - 4;
-        const flagY = py + 2;
-
-        // Slovak flag (white, blue, red horizontal stripes)
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(flagX, flagY, flagW, flagH / 3);
-        ctx.fillStyle = '#0b4ea2';
-        ctx.fillRect(flagX, flagY + flagH / 3, flagW, flagH / 3);
-        ctx.fillStyle = '#ee1c25';
-        ctx.fillRect(flagX, flagY + flagH * 2 / 3, flagW, flagH / 3);
-        // Flag border
-        ctx.strokeStyle = '#888';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(flagX, flagY, flagW, flagH);
-
-        // Oto (left side, small hedgehog)
-        // Body
-        ctx.fillStyle = '#4a3728';
+        // Paddle
+        const ps = PADDLE_STYLES[paddleStyle] || PADDLE_STYLES.wood;
+        ctx.fillStyle = ps.fill;
         ctx.beginPath();
-        ctx.arc(px + charW / 2, py + PADDLE_H / 2 - 2, 9, Math.PI, 0);
+        ctx.roundRect(paddleX, PADDLE_Y, PADDLE_W, PADDLE_H, 4);
         ctx.fill();
-        ctx.fillStyle = '#F5DEB3';
-        ctx.beginPath();
-        ctx.arc(px + charW / 2, py + PADDLE_H / 2 + 1, 7, 0, Math.PI);
-        ctx.fill();
-        // Eyes
-        ctx.fillStyle = '#000';
-        ctx.fillRect(px + charW / 2 - 4, py + PADDLE_H / 2 - 1, 2, 2);
-        ctx.fillRect(px + charW / 2 + 2, py + PADDLE_H / 2 - 1, 2, 2);
-        // Nose
-        ctx.fillRect(px + charW / 2 - 1, py + PADDLE_H / 2 + 2, 2, 2);
-
-        // Lujza (right side, small squirrel)
-        const lx = px + PADDLE_W - charW / 2;
-        // Tail
-        ctx.fillStyle = '#D2691E';
-        ctx.beginPath();
-        ctx.arc(lx + 5, py + PADDLE_H / 2 - 6, 5, 0, Math.PI * 2);
-        ctx.fill();
-        // Body
-        ctx.fillStyle = '#CD853F';
-        ctx.beginPath();
-        ctx.arc(lx, py + PADDLE_H / 2, 8, 0, Math.PI * 2);
-        ctx.fill();
-        // Face
-        ctx.fillStyle = '#F5DEB3';
-        ctx.beginPath();
-        ctx.arc(lx, py + PADDLE_H / 2 + 1, 5, 0, Math.PI);
-        ctx.fill();
-        // Ears
-        ctx.fillStyle = '#B8651A';
-        ctx.fillRect(lx - 6, py + PADDLE_H / 2 - 9, 3, 5);
-        ctx.fillRect(lx + 3, py + PADDLE_H / 2 - 9, 3, 5);
-        // Eyes
-        ctx.fillStyle = '#000';
-        ctx.fillRect(lx - 4, py + PADDLE_H / 2 - 1, 2, 2);
-        ctx.fillRect(lx + 2, py + PADDLE_H / 2 - 1, 2, 2);
+        // Highlight
+        ctx.fillStyle = ps.highlight;
+        ctx.fillRect(paddleX + 3, PADDLE_Y + 2, PADDLE_W - 6, PADDLE_H / 3);
+        // Stripe detail
+        ctx.fillStyle = ps.stripe;
+        ctx.fillRect(paddleX + 2, PADDLE_Y + PADDLE_H - 4, PADDLE_W - 4, 2);
 
         // Ball
-        ctx.fillStyle = '#fff';
+        const bc = BALL_COLORS[ballColor] || '#fff';
+        ctx.fillStyle = bc;
         ctx.beginPath();
         ctx.arc(ballX, ballY, BALL_R, 0, Math.PI * 2);
         ctx.fill();
         // Ball glow
-        ctx.fillStyle = 'rgba(233,69,96,0.3)';
+        ctx.fillStyle = bc.replace(')', ',0.2)').replace('rgb', 'rgba').replace('#', '');
+        ctx.globalAlpha = 0.3;
         ctx.beginPath();
         ctx.arc(ballX, ballY, BALL_R + 3, 0, Math.PI * 2);
         ctx.fill();
+        ctx.globalAlpha = 1;
 
         // Score on canvas
         ctx.fillStyle = '#555';
