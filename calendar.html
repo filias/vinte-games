@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ako idú za sebou dni - Oto & Lujza</title>
+    <link rel="icon" type="image/svg+xml" href="static/favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #1a1a2e;
+            color: #e0e0e0;
+            font-family: 'Press Start 2P', monospace;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+        }
+        a.back { position: absolute; top: 1rem; left: 1.5rem; color: #888; text-decoration: none; font-size: 0.7rem; }
+        a.back:hover { color: #e94560; }
+        h1 { font-size: clamp(0.8rem, 3vw, 1.3rem); color: #e94560; text-shadow: 2px 2px 0 #0f3460; margin-bottom: 0.3rem; margin-top: 0.5rem; }
+        .subtitle { font-size: 0.5rem; color: #888; margin-bottom: 1rem; }
+
+        /* Mode selector */
+        .mode-select { display: flex; gap: 0.8rem; margin-bottom: 1.5rem; }
+        .mode-btn {
+            font-family: 'Press Start 2P', monospace; font-size: 0.6rem;
+            padding: 0.6rem 1.2rem; border: 3px solid #0f3460; border-radius: 8px;
+            background: #16213e; color: #888; cursor: pointer; transition: all 0.2s;
+        }
+        .mode-btn:hover { border-color: #e94560; color: #e0e0e0; }
+        .mode-btn.active { border-color: #e94560; color: #e94560; }
+
+        /* Game area */
+        #game-area { display: none; flex-direction: column; align-items: center; }
+
+        /* Slots container */
+        .slots-row {
+            display: flex; gap: 0.3rem; align-items: center;
+            flex-wrap: nowrap; margin-bottom: 1rem;
+        }
+        .slots-col {
+            display: flex; flex-direction: column; gap: 0.3rem;
+            align-items: center; margin-bottom: 1rem;
+        }
+
+        /* Individual slot */
+        .slot {
+            width: clamp(50px, 12vw, 80px); height: 44px;
+            border: 2px dashed #0f3460; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: clamp(0.35rem, 1.2vw, 0.55rem); color: #555;
+            transition: border-color 0.2s;
+        }
+        .slot.occupied { border-style: solid; }
+        .slot.highlight { border-color: #e94560; }
+
+        .slot-month {
+            width: clamp(120px, 40vw, 200px); height: 40px;
+        }
+
+        /* Draggable items */
+        .item {
+            padding: 0.4rem 0.6rem;
+            background: #16213e; border: 2px solid #0f3460; border-radius: 6px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.35rem, 1.2vw, 0.55rem);
+            color: #e0e0e0; cursor: grab; user-select: none;
+            -webkit-user-select: none; touch-action: none;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .item:active { transform: scale(1.05); box-shadow: 0 0 10px rgba(233,69,96,0.3); }
+        .item.fixed {
+            background: #e94560; border-color: #e94560; color: white; cursor: default;
+        }
+        .item.placed {
+            background: #0f3460; border-color: #2ecc71; color: #2ecc71;
+        }
+
+        /* Available items pool */
+        .pool {
+            display: flex; flex-wrap: wrap; gap: 0.4rem;
+            justify-content: center; margin-bottom: 1.5rem;
+            max-width: 500px;
+        }
+
+        /* Result */
+        #result {
+            font-size: 0.7rem; margin: 1rem 0; min-height: 1.5rem;
+        }
+        .success { color: #2ecc71; }
+        .error { color: #e94560; }
+
+        .btn {
+            font-family: 'Press Start 2P', monospace; font-size: 0.55rem;
+            padding: 0.5rem 1rem; background: #e94560; color: white;
+            border: none; border-radius: 4px; cursor: pointer; margin: 0.3rem;
+        }
+        .btn:hover { background: #c73652; }
+        .btn-outline {
+            background: transparent; border: 2px solid #0f3460; color: #888;
+        }
+        .btn-outline:hover { border-color: #e94560; color: #e94560; }
+    </style>
+</head>
+<body>
+    <a href="/" class="back">&larr; hry</a>
+    <h1>Ako idú za sebou dni</h1>
+    <p class="subtitle">zoraď dni v týždni alebo mesiace v roku</p>
+
+    <div class="mode-select" id="mode-select">
+        <button class="mode-btn" onclick="startGame('week')">Týždeň</button>
+        <button class="mode-btn" onclick="startGame('month')">Mesiace</button>
+    </div>
+
+    <div id="game-area">
+        <div id="slots"></div>
+        <div class="pool" id="pool"></div>
+        <p id="result"></p>
+        <div>
+            <button class="btn" onclick="checkAnswer()">Skontrolovať</button>
+            <button class="btn btn-outline" onclick="resetGame()">Znova</button>
+            <button class="btn btn-outline" onclick="backToSelect()">Späť</button>
+        </div>
+    </div>
+
+    <script>
+    const DAYS = ['pondelok', 'utorok', 'streda', 'štvrtok', 'piatok', 'sobota', 'nedeľa'];
+    const MONTHS = ['január', 'február', 'marec', 'apríl', 'máj', 'jún', 'júl', 'august', 'september', 'október', 'november', 'december'];
+
+    let mode = null;
+    let items = [];
+    let fixedIndex = 0;
+    let slots = []; // array of {element, value}
+    let dragItem = null;
+    let dragValue = null;
+
+    function startGame(m) {
+        mode = m;
+        items = mode === 'week' ? [...DAYS] : [...MONTHS];
+        fixedIndex = Math.floor(Math.random() * items.length);
+
+        document.getElementById('mode-select').style.display = 'none';
+        document.getElementById('game-area').style.display = 'flex';
+        document.getElementById('result').textContent = '';
+
+        buildSlots();
+        buildPool();
+    }
+
+    function buildSlots() {
+        const container = document.getElementById('slots');
+        container.innerHTML = '';
+        const isRow = mode === 'week';
+        container.className = isRow ? 'slots-row' : 'slots-col';
+
+        slots = [];
+        for (let i = 0; i < items.length; i++) {
+            const slot = document.createElement('div');
+            slot.className = 'slot' + (isRow ? '' : ' slot-month');
+            slot.dataset.index = i;
+
+            if (i === fixedIndex) {
+                slot.classList.add('occupied');
+                const item = createItem(items[i], true);
+                slot.appendChild(item);
+                slots.push({element: slot, value: items[i]});
+            } else {
+                slots.push({element: slot, value: null});
+                // Drop target events
+                slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('highlight'); });
+                slot.addEventListener('dragleave', () => slot.classList.remove('highlight'));
+                slot.addEventListener('drop', e => { e.preventDefault(); slot.classList.remove('highlight'); dropOnSlot(slot, i); });
+                // Touch drop
+                slot.addEventListener('touchend', e => { /* handled in touchmove */ });
+            }
+            container.appendChild(slot);
+        }
+    }
+
+    function buildPool() {
+        const pool = document.getElementById('pool');
+        pool.innerHTML = '';
+        const movable = items.filter((_, i) => i !== fixedIndex);
+        // Shuffle
+        for (let i = movable.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [movable[i], movable[j]] = [movable[j], movable[i]];
+        }
+        for (const name of movable) {
+            pool.appendChild(createItem(name, false));
+        }
+    }
+
+    function createItem(name, fixed) {
+        const el = document.createElement('div');
+        el.className = 'item' + (fixed ? ' fixed' : '');
+        el.textContent = name;
+        el.dataset.value = name;
+
+        if (!fixed) {
+            el.draggable = true;
+            el.addEventListener('dragstart', e => {
+                dragValue = name;
+                dragItem = el;
+                setTimeout(() => el.style.opacity = '0.4', 0);
+            });
+            el.addEventListener('dragend', () => {
+                el.style.opacity = '1';
+                dragItem = null;
+                dragValue = null;
+            });
+
+            // Touch drag
+            let touchClone = null;
+            el.addEventListener('touchstart', e => {
+                e.preventDefault();
+                dragValue = name;
+                dragItem = el;
+                touchClone = el.cloneNode(true);
+                touchClone.style.position = 'fixed';
+                touchClone.style.pointerEvents = 'none';
+                touchClone.style.zIndex = '1000';
+                touchClone.style.opacity = '0.8';
+                document.body.appendChild(touchClone);
+                el.style.opacity = '0.4';
+            });
+            el.addEventListener('touchmove', e => {
+                e.preventDefault();
+                if (!touchClone) return;
+                const t = e.touches[0];
+                touchClone.style.left = (t.clientX - 30) + 'px';
+                touchClone.style.top = (t.clientY - 20) + 'px';
+
+                // Highlight slot under finger
+                slots.forEach(s => s.element.classList.remove('highlight'));
+                const target = document.elementFromPoint(t.clientX, t.clientY);
+                if (target && target.classList.contains('slot') && !target.querySelector('.fixed')) {
+                    target.classList.add('highlight');
+                }
+            });
+            el.addEventListener('touchend', e => {
+                if (touchClone) { touchClone.remove(); touchClone = null; }
+                el.style.opacity = '1';
+
+                const t = e.changedTouches[0];
+                const target = document.elementFromPoint(t.clientX, t.clientY);
+                if (target && target.classList.contains('slot')) {
+                    const idx = parseInt(target.dataset.index);
+                    dropOnSlot(target, idx);
+                }
+                dragItem = null; dragValue = null;
+                slots.forEach(s => s.element.classList.remove('highlight'));
+            });
+        }
+        return el;
+    }
+
+    function dropOnSlot(slotEl, index) {
+        if (!dragValue || index === fixedIndex) return;
+
+        // If slot already has an item, move it back to pool
+        const existing = slotEl.querySelector('.item');
+        if (existing && !existing.classList.contains('fixed')) {
+            document.getElementById('pool').appendChild(existing);
+            existing.classList.remove('placed');
+            slots[index].value = null;
+        }
+
+        // Place the dragged item
+        if (dragItem) {
+            slotEl.appendChild(dragItem);
+            dragItem.classList.add('placed');
+            dragItem.style.opacity = '1';
+            slots[index].value = dragValue;
+            slotEl.classList.add('occupied');
+        }
+    }
+
+    function checkAnswer() {
+        const result = document.getElementById('result');
+        const allFilled = slots.every(s => s.value !== null);
+        if (!allFilled) {
+            result.textContent = 'Umiestni všetky!';
+            result.className = 'error';
+            return;
+        }
+
+        const correct = slots.every((s, i) => s.value === items[i]);
+        if (correct) {
+            result.textContent = 'Výborne! Správne zoradené! 🎉';
+            result.className = 'success';
+            // Mark all as correct
+            slots.forEach(s => {
+                const item = s.element.querySelector('.item');
+                if (item) item.classList.add('placed');
+            });
+        } else {
+            result.textContent = 'Skús to znova!';
+            result.className = 'error';
+            // Highlight wrong ones
+            slots.forEach((s, i) => {
+                const item = s.element.querySelector('.item');
+                if (item && !item.classList.contains('fixed')) {
+                    if (s.value === items[i]) {
+                        item.style.borderColor = '#2ecc71';
+                    } else {
+                        item.style.borderColor = '#e94560';
+                    }
+                }
+            });
+        }
+    }
+
+    function resetGame() {
+        startGame(mode);
+    }
+
+    function backToSelect() {
+        document.getElementById('game-area').style.display = 'none';
+        document.getElementById('mode-select').style.display = 'flex';
+    }
+    </script>
+</body>
+</html>

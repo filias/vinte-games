@@ -38,6 +38,11 @@ def apples():
     return send_from_directory(".", "index.html")
 
 
+@app.route("/calendar/")
+def calendar():
+    return send_from_directory(".", "calendar.html")
+
+
 @app.route("/api/scores", methods=["POST"])
 @app.route("/apples/api/scores", methods=["POST"])
 def submit_score():
