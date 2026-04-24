@@ -15,6 +15,7 @@ let canvas, ctx;
 let character = null; // 'oto' or 'lujza'
 let fruitMode = 'all';
 let basketMode = 'woven';
+let bgMode = 'meadow';
 let highScore = 0;
 let basketX;
 let apples = [];
@@ -118,6 +119,26 @@ function setupCharacterSelect() {
     drawOrange(allCtx, 24, 4, 20);
     drawGrapes(allCtx, 13, 24, 20);
 
+    // Draw background previews
+    for (const [id, theme] of Object.entries(BG_THEMES)) {
+        const c = document.getElementById('bg-' + id + '-preview');
+        if (!c) continue;
+        const cx = c.getContext('2d');
+        c.width = 48; c.height = 36;
+        cx.fillStyle = theme.sky; cx.fillRect(0, 0, 48, 36);
+        cx.fillStyle = theme.skyTop; cx.fillRect(0, 0, 48, 12);
+        cx.fillStyle = theme.ground; cx.fillRect(0, 28, 48, 8);
+        if (theme.stars) {
+            cx.fillStyle = '#fff';
+            for (let i = 0; i < 8; i++) cx.fillRect((i * 7 + 3) % 44, (i * 5 + 2) % 20, 2, 2);
+        }
+        if (theme.clouds) {
+            cx.fillStyle = 'rgba(255,255,255,0.5)';
+            cx.beginPath(); cx.arc(15, 10, 5, 0, Math.PI * 2); cx.fill();
+            cx.beginPath(); cx.arc(35, 8, 4, 0, Math.PI * 2); cx.fill();
+        }
+    }
+
     // Draw basket previews
     const basketPreviews = {
         'basket-woven-preview': drawBasketWoven,
@@ -141,6 +162,12 @@ function selectFruit(mode, el) {
 
 function selectBasket(mode, el) {
     basketMode = mode;
+    el.parentElement.querySelectorAll('.fruit-option').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+}
+
+function selectBg(mode, el) {
+    bgMode = mode;
     el.parentElement.querySelectorAll('.fruit-option').forEach(o => o.classList.remove('active'));
     el.classList.add('active');
 }
@@ -239,29 +266,62 @@ function update(timestamp) {
     }
 }
 
-function draw() {
-    // Clear
-    ctx.fillStyle = '#87CEEB';
-    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+const BG_THEMES = {
+    meadow: {
+        sky: '#87CEEB', skyTop: '#B0E0FF', clouds: true,
+        ground: '#2ecc71', groundLine: '#27ae60', tufts: '#1e8449',
+    },
+    sunset: {
+        sky: '#e67e22', skyTop: '#f39c12', clouds: true,
+        ground: '#5a3e2b', groundLine: '#4a2e1b', tufts: '#3a2010',
+    },
+    night: {
+        sky: '#1a1a3e', skyTop: '#0d0d2b', clouds: false,
+        ground: '#1a3a1a', groundLine: '#0f2a0f', tufts: '#0a200a',
+        stars: true,
+    },
+    snow: {
+        sky: '#c8d8e8', skyTop: '#dce8f0', clouds: true,
+        ground: '#f0f0f5', groundLine: '#dde0e8', tufts: '#c8ccd5',
+    },
+};
 
-    // Sky gradient effect (simple)
-    ctx.fillStyle = '#B0E0FF';
+function draw() {
+    const bg = BG_THEMES[bgMode] || BG_THEMES.meadow;
+
+    // Sky
+    ctx.fillStyle = bg.sky;
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+    ctx.fillStyle = bg.skyTop;
     ctx.fillRect(0, 0, CANVAS_W, CANVAS_H / 3);
 
+    // Stars (night only)
+    if (bg.stars) {
+        ctx.fillStyle = '#fff';
+        for (let i = 0; i < 40; i++) {
+            const sx = (i * 97 + 13) % CANVAS_W;
+            const sy = (i * 53 + 7) % (CANVAS_H - 100);
+            ctx.fillRect(sx, sy, 2, 2);
+        }
+    }
+
     // Clouds
-    ctx.fillStyle = '#fff';
-    drawCloud(ctx, 50, 60, 50);
-    drawCloud(ctx, 200, 30, 40);
-    drawCloud(ctx, 380, 70, 35);
+    if (bg.clouds) {
+        ctx.fillStyle = bgMode === 'sunset' ? 'rgba(255,255,255,0.3)' :
+                        bgMode === 'snow' ? 'rgba(255,255,255,0.6)' : '#fff';
+        drawCloud(ctx, 50, 60, 50);
+        drawCloud(ctx, 200, 30, 40);
+        drawCloud(ctx, 380, 70, 35);
+    }
 
     // Ground
-    ctx.fillStyle = '#2ecc71';
+    ctx.fillStyle = bg.ground;
     ctx.fillRect(0, CANVAS_H - GROUND_H, CANVAS_W, GROUND_H);
-    ctx.fillStyle = '#27ae60';
+    ctx.fillStyle = bg.groundLine;
     ctx.fillRect(0, CANVAS_H - GROUND_H, CANVAS_W, 4);
 
-    // Grass tufts
-    ctx.fillStyle = '#1e8449';
+    // Tufts
+    ctx.fillStyle = bg.tufts;
     for (let i = 0; i < CANVAS_W; i += 12) {
         ctx.fillRect(i, CANVAS_H - GROUND_H - 2, 3, 4);
     }

@@ -479,33 +479,31 @@ function drawBasketWoven(ctx, x, y, width, height) {
 function drawBasketBucket(ctx, x, y, width, height) {
     ctx.save();
     ctx.translate(x, y);
-    const topW = width;
-    const botW = width * 0.7;
-    const offsetX = (topW - botW) / 2;
+    const cx = width / 2;
 
-    // Wooden planks
-    ctx.fillStyle = '#b5651d';
+    // Red fabric bag shape (rounded)
+    ctx.fillStyle = '#c0392b';
     ctx.beginPath();
-    ctx.moveTo(0, 0); ctx.lineTo(topW, 0);
-    ctx.lineTo(topW - offsetX, height); ctx.lineTo(offsetX, height);
-    ctx.closePath(); ctx.fill();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(width, 0);
+    ctx.bezierCurveTo(width + 4, height * 0.5, width - 4, height, cx, height + 2);
+    ctx.bezierCurveTo(4, height, -4, height * 0.5, 0, 0);
+    ctx.fill();
 
-    // Plank lines
-    ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 1;
-    for (let col = width * 0.2; col < width * 0.9; col += width * 0.2) {
-        ctx.beginPath();
-        ctx.moveTo(col, 0); ctx.lineTo(offsetX + (col / topW) * botW, height);
-        ctx.stroke();
-    }
+    // Darker fold lines
+    ctx.strokeStyle = '#922b21'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(width * 0.3, 0); ctx.quadraticCurveTo(width * 0.25, height * 0.6, cx - 2, height); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(width * 0.7, 0); ctx.quadraticCurveTo(width * 0.75, height * 0.6, cx + 2, height); ctx.stroke();
 
-    // Metal bands
-    ctx.strokeStyle = '#888'; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(2, height * 0.3); ctx.lineTo(topW - 2, height * 0.3); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(offsetX * 0.7 + 2, height * 0.7); ctx.lineTo(topW - offsetX * 0.7 - 2, height * 0.7); ctx.stroke();
+    // Highlight
+    ctx.fillStyle = '#e74c3c';
+    ctx.beginPath();
+    ctx.ellipse(width * 0.35, height * 0.35, width * 0.1, height * 0.2, -0.2, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Rim
-    ctx.fillStyle = '#666';
-    ctx.beginPath(); ctx.roundRect(-3, -4, topW + 6, 7, 3); ctx.fill();
+    // Rim with drawstring
+    ctx.fillStyle = '#922b21';
+    ctx.beginPath(); ctx.roundRect(-2, -3, width + 4, 6, 3); ctx.fill();
     ctx.restore();
 }
 
