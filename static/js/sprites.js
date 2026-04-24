@@ -443,54 +443,109 @@ function drawGrapes(ctx, x, y, size) {
     ctx.restore();
 }
 
-function drawBasket(ctx, x, y, width, height) {
+// Basket drawing functions
+function drawBasketWoven(ctx, x, y, width, height) {
     ctx.save();
     ctx.translate(x, y);
-
-    // Basket shape (trapezoid with rounded bottom)
     const topW = width;
     const botW = width * 0.75;
     const offsetX = (topW - botW) / 2;
 
-    // Main basket body
     ctx.fillStyle = '#A0522D';
     ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(topW, 0);
-    ctx.lineTo(topW - offsetX, height);
-    ctx.lineTo(offsetX, height);
-    ctx.closePath();
-    ctx.fill();
+    ctx.moveTo(0, 0); ctx.lineTo(topW, 0);
+    ctx.lineTo(topW - offsetX, height); ctx.lineTo(offsetX, height);
+    ctx.closePath(); ctx.fill();
 
-    // Weave pattern (horizontal lines)
-    ctx.strokeStyle = '#CD853F';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#CD853F'; ctx.lineWidth = 2;
     for (let row = height * 0.25; row < height; row += height * 0.2) {
-        ctx.beginPath();
         const progress = row / height;
-        const lx = offsetX * progress;
-        const rx = topW - offsetX * progress;
-        ctx.moveTo(lx, row);
-        ctx.lineTo(rx, row);
+        ctx.beginPath();
+        ctx.moveTo(offsetX * progress, row);
+        ctx.lineTo(topW - offsetX * progress, row);
         ctx.stroke();
     }
-
-    // Weave pattern (vertical lines)
     for (let col = width * 0.15; col < width * 0.85; col += width * 0.15) {
         ctx.beginPath();
-        ctx.moveTo(col, 0);
-        const bottomCol = offsetX + (col / topW) * botW;
-        ctx.lineTo(bottomCol, height);
+        ctx.moveTo(col, 0); ctx.lineTo(offsetX + (col / topW) * botW, height);
         ctx.stroke();
     }
 
-    // Rim (thick top edge)
     ctx.fillStyle = '#8B4513';
+    ctx.beginPath(); ctx.roundRect(-3, -4, topW + 6, 8, 3); ctx.fill();
+    ctx.restore();
+}
+
+function drawBasketBucket(ctx, x, y, width, height) {
+    ctx.save();
+    ctx.translate(x, y);
+    const topW = width;
+    const botW = width * 0.7;
+    const offsetX = (topW - botW) / 2;
+
+    // Wooden planks
+    ctx.fillStyle = '#b5651d';
     ctx.beginPath();
-    ctx.roundRect(-3, -4, topW + 6, 8, 3);
+    ctx.moveTo(0, 0); ctx.lineTo(topW, 0);
+    ctx.lineTo(topW - offsetX, height); ctx.lineTo(offsetX, height);
+    ctx.closePath(); ctx.fill();
+
+    // Plank lines
+    ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 1;
+    for (let col = width * 0.2; col < width * 0.9; col += width * 0.2) {
+        ctx.beginPath();
+        ctx.moveTo(col, 0); ctx.lineTo(offsetX + (col / topW) * botW, height);
+        ctx.stroke();
+    }
+
+    // Metal bands
+    ctx.strokeStyle = '#888'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(2, height * 0.3); ctx.lineTo(topW - 2, height * 0.3); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(offsetX * 0.7 + 2, height * 0.7); ctx.lineTo(topW - offsetX * 0.7 - 2, height * 0.7); ctx.stroke();
+
+    // Rim
+    ctx.fillStyle = '#666';
+    ctx.beginPath(); ctx.roundRect(-3, -4, topW + 6, 7, 3); ctx.fill();
+    ctx.restore();
+}
+
+function drawBasketPot(ctx, x, y, width, height) {
+    ctx.save();
+    ctx.translate(x, y);
+    const cx = width / 2;
+
+    // Pot body (rounded)
+    ctx.fillStyle = '#607d8b';
+    ctx.beginPath();
+    ctx.ellipse(cx, height * 0.6, width * 0.5, height * 0.55, 0, 0, Math.PI);
+    ctx.lineTo(0, 0); ctx.lineTo(width, 0);
+    ctx.closePath(); ctx.fill();
+
+    // Shiny highlight
+    ctx.fillStyle = '#78909c';
+    ctx.beginPath();
+    ctx.ellipse(cx - width * 0.15, height * 0.3, width * 0.12, height * 0.3, -0.2, 0, Math.PI * 2);
     ctx.fill();
 
+    // Rim
+    ctx.fillStyle = '#455a64';
+    ctx.beginPath(); ctx.roundRect(-4, -5, width + 8, 9, 4); ctx.fill();
+
+    // Handles
+    ctx.strokeStyle = '#455a64'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(-5, height * 0.3, 6, -0.5, 1.5); ctx.stroke();
+    ctx.beginPath(); ctx.arc(width + 5, height * 0.3, 6, 1.6, 3.6); ctx.stroke();
     ctx.restore();
+}
+
+const BASKET_DRAWERS = {
+    woven: drawBasketWoven,
+    bucket: drawBasketBucket,
+    pot: drawBasketPot,
+};
+
+function drawBasket(ctx, x, y, width, height) {
+    (BASKET_DRAWERS[basketMode] || drawBasketWoven)(ctx, x, y, width, height);
 }
 
 function drawHeart(ctx, x, y, size) {

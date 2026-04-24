@@ -54,6 +54,22 @@
             </div>
         </div>
 
+        <h2 class="fruit-title">Vyber si košík</h2>
+        <div class="fruit-options">
+            <div class="fruit-option active" onclick="selectBasket('woven', this)">
+                <canvas id="basket-woven-preview"></canvas>
+                <div class="subtitle">prútený</div>
+            </div>
+            <div class="fruit-option" onclick="selectBasket('bucket', this)">
+                <canvas id="basket-bucket-preview"></canvas>
+                <div class="subtitle">vedro</div>
+            </div>
+            <div class="fruit-option" onclick="selectBasket('pot', this)">
+                <canvas id="basket-pot-preview"></canvas>
+                <div class="subtitle">hrniec</div>
+            </div>
+        </div>
+
         <button class="leaderboard-btn" onclick="showLeaderboard()">Rebríček</button>
     </div>
 

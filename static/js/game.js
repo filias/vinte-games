@@ -14,6 +14,7 @@ const SPAWN_INTERVAL_DECAY = 0.997;
 let canvas, ctx;
 let character = null; // 'oto' or 'lujza'
 let fruitMode = 'all';
+let basketMode = 'woven';
 let highScore = 0;
 let basketX;
 let apples = [];
@@ -116,11 +117,31 @@ function setupCharacterSelect() {
     drawApple(allCtx, 2, 4, 20);
     drawOrange(allCtx, 24, 4, 20);
     drawGrapes(allCtx, 13, 24, 20);
+
+    // Draw basket previews
+    const basketPreviews = {
+        'basket-woven-preview': drawBasketWoven,
+        'basket-bucket-preview': drawBasketBucket,
+        'basket-pot-preview': drawBasketPot,
+    };
+    for (const [id, drawFn] of Object.entries(basketPreviews)) {
+        const c = document.getElementById(id);
+        const cx = c.getContext('2d');
+        c.width = 48;
+        c.height = 36;
+        drawFn(cx, 6, 4, 36, 28);
+    }
 }
 
 function selectFruit(mode, el) {
     fruitMode = mode;
-    document.querySelectorAll('.fruit-option').forEach(o => o.classList.remove('active'));
+    el.parentElement.querySelectorAll('.fruit-option').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+}
+
+function selectBasket(mode, el) {
+    basketMode = mode;
+    el.parentElement.querySelectorAll('.fruit-option').forEach(o => o.classList.remove('active'));
     el.classList.add('active');
 }
 
