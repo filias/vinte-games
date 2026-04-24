@@ -34,7 +34,7 @@ def home():
 
 
 @app.route("/apples/")
-def jablka():
+def apples():
     return send_from_directory(".", "index.html")
 
 
@@ -84,7 +84,7 @@ def get_scores():
 
 
 @app.route("/apples/static/<path:filename>")
-def jablka_static(filename):
+def apples_static(filename):
     return send_from_directory("static", filename)
 
 
