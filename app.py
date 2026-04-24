@@ -33,13 +33,13 @@ def home():
     return send_from_directory(".", "home.html")
 
 
-@app.route("/jablka/")
+@app.route("/apples/")
 def jablka():
     return send_from_directory(".", "index.html")
 
 
 @app.route("/api/scores", methods=["POST"])
-@app.route("/jablka/api/scores", methods=["POST"])
+@app.route("/apples/api/scores", methods=["POST"])
 def submit_score():
     data = request.json
     name = data.get("name", "").strip()[:20]
@@ -59,7 +59,7 @@ def submit_score():
 
 
 @app.route("/api/scores")
-@app.route("/jablka/api/scores")
+@app.route("/apples/api/scores")
 def get_scores():
     db = get_db()
     # All time top 15
@@ -83,7 +83,7 @@ def get_scores():
     )
 
 
-@app.route("/jablka/static/<path:filename>")
+@app.route("/apples/static/<path:filename>")
 def jablka_static(filename):
     return send_from_directory("static", filename)
 
