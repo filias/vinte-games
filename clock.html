@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koľko je hodín? - Oto & Lujza</title>
+    <link rel="icon" type="image/svg+xml" href="static/favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #1a1a2e;
+            color: #e0e0e0;
+            font-family: 'Press Start 2P', monospace;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+        }
+        a.back { position: absolute; top: 1rem; left: 1.5rem; color: #888; text-decoration: none; font-size: 0.7rem; }
+        a.back:hover { color: #e94560; }
+        h1 { font-size: clamp(0.9rem, 3vw, 1.3rem); color: #e94560; text-shadow: 2px 2px 0 #0f3460; margin: 0.5rem 0 0.3rem; }
+        .subtitle { font-size: 0.5rem; color: #888; margin-bottom: 1rem; }
+
+        .clocks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            max-width: 640px;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        .clock-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #16213e;
+            border: 2px solid #0f3460;
+            border-radius: 10px;
+            padding: 0.8rem 0.5rem;
+        }
+        .clock-card.correct { border-color: #2ecc71; }
+        .clock-card.wrong { border-color: #e94560; }
+        .clock-card canvas { margin-bottom: 0.5rem; }
+        .time-input {
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+        .time-input input {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.7rem;
+            width: 2.5rem;
+            text-align: center;
+            padding: 0.3rem;
+            border: 2px solid #0f3460;
+            border-radius: 4px;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            outline: none;
+        }
+        .time-input input:focus { border-color: #e94560; }
+        .time-input span { font-size: 0.8rem; color: #888; }
+        .clock-card.correct input { border-color: #2ecc71; color: #2ecc71; }
+        .clock-card.wrong input { border-color: #e94560; color: #e94560; }
+
+        #result { font-size: 0.7rem; margin: 0.8rem 0; min-height: 1.5rem; }
+        .success { color: #2ecc71; }
+        .error { color: #e94560; }
+
+        .btn {
+            font-family: 'Press Start 2P', monospace; font-size: 0.55rem;
+            padding: 0.5rem 1rem; background: #e94560; color: white;
+            border: none; border-radius: 4px; cursor: pointer; margin: 0.3rem;
+        }
+        .btn:hover { background: #c73652; }
+        .btn-outline { background: transparent; border: 2px solid #0f3460; color: #888; }
+        .btn-outline:hover { border-color: #e94560; color: #e94560; }
+
+        .score-line { font-size: 0.5rem; color: #888; margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <a href="/" class="back">&larr; hry</a>
+    <h1>Koľko je hodín?</h1>
+    <p class="subtitle">napíš správny čas</p>
+    <p class="score-line">Skóre: <span id="score" style="color:#e94560;">0</span> / <span id="total">0</span></p>
+
+    <div class="clocks" id="clocks"></div>
+
+    <p id="result"></p>
+    <div>
+        <button class="btn" onclick="checkAll()">Skontrolovať</button>
+        <button class="btn btn-outline" onclick="newRound()">Nové hodiny</button>
+    </div>
+
+    <script>
+    const NUM_CLOCKS = 6;
+    let clocks = [];
+    let totalAnswered = 0;
+    let totalCorrect = 0;
+
+    function drawClock(canvas, hours, minutes) {
+        const size = canvas.width;
+        const ctx = canvas.getContext('2d');
+        const cx = size / 2;
+        const cy = size / 2;
+        const r = size / 2 - 4;
+
+        ctx.clearRect(0, 0, size, size);
+
+        // Face
+        ctx.fillStyle = '#f5f3ef';
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Border
+        ctx.strokeStyle = '#e94560';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Numbers
+        ctx.fillStyle = '#1a1a2e';
+        ctx.font = `bold ${r * 0.22}px system-ui, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        for (let n = 1; n <= 12; n++) {
+            const angle = (n * 30 - 90) * Math.PI / 180;
+            const nx = cx + Math.cos(angle) * r * 0.78;
+            const ny = cy + Math.sin(angle) * r * 0.78;
+            ctx.fillText(n, nx, ny);
+        }
+
+        // Tick marks
+        for (let i = 0; i < 60; i++) {
+            const angle = (i * 6 - 90) * Math.PI / 180;
+            const isMajor = i % 5 === 0;
+            const innerR = isMajor ? r * 0.88 : r * 0.92;
+            const outerR = r * 0.96;
+            ctx.strokeStyle = '#1a1a2e';
+            ctx.lineWidth = isMajor ? 2 : 1;
+            ctx.beginPath();
+            ctx.moveTo(cx + Math.cos(angle) * innerR, cy + Math.sin(angle) * innerR);
+            ctx.lineTo(cx + Math.cos(angle) * outerR, cy + Math.sin(angle) * outerR);
+            ctx.stroke();
+        }
+
+        // Hour hand (red, short, thick)
+        const hAngle = ((hours % 12) * 30 + minutes * 0.5 - 90) * Math.PI / 180;
+        ctx.strokeStyle = '#e94560';
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(hAngle) * r * 0.5, cy + Math.sin(hAngle) * r * 0.5);
+        ctx.stroke();
+
+        // Minute hand (green, long, thinner)
+        const mAngle = (minutes * 6 - 90) * Math.PI / 180;
+        ctx.strokeStyle = '#2ecc71';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(mAngle) * r * 0.72, cy + Math.sin(mAngle) * r * 0.72);
+        ctx.stroke();
+
+        // Center dot
+        ctx.fillStyle = '#1a1a2e';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    function generateTime() {
+        const h = Math.floor(Math.random() * 12) + 1;
+        const mOptions = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+        const m = mOptions[Math.floor(Math.random() * mOptions.length)];
+        return { h, m };
+    }
+
+    function newRound() {
+        const container = document.getElementById('clocks');
+        container.innerHTML = '';
+        clocks = [];
+        document.getElementById('result').textContent = '';
+
+        for (let i = 0; i < NUM_CLOCKS; i++) {
+            const time = generateTime();
+
+            const card = document.createElement('div');
+            card.className = 'clock-card';
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 120;
+            canvas.height = 120;
+            drawClock(canvas, time.h, time.m);
+
+            const inputDiv = document.createElement('div');
+            inputDiv.className = 'time-input';
+
+            const hInput = document.createElement('input');
+            hInput.type = 'text';
+            hInput.maxLength = 2;
+            hInput.placeholder = 'hh';
+            hInput.inputMode = 'numeric';
+
+            const sep = document.createElement('span');
+            sep.textContent = ':';
+
+            const mInput = document.createElement('input');
+            mInput.type = 'text';
+            mInput.maxLength = 2;
+            mInput.placeholder = 'mm';
+            mInput.inputMode = 'numeric';
+
+            // Auto-advance from hours to minutes
+            hInput.addEventListener('input', () => {
+                if (hInput.value.length >= 2) mInput.focus();
+            });
+
+            inputDiv.appendChild(hInput);
+            inputDiv.appendChild(sep);
+            inputDiv.appendChild(mInput);
+
+            card.appendChild(canvas);
+            card.appendChild(inputDiv);
+            container.appendChild(card);
+
+            clocks.push({ h: time.h, m: time.m, card, hInput, mInput });
+        }
+    }
+
+    function checkAll() {
+        let allCorrect = true;
+        let answered = 0;
+        let correct = 0;
+
+        for (const clock of clocks) {
+            const userH = parseInt(clock.hInput.value);
+            const userM = parseInt(clock.mInput.value);
+
+            if (isNaN(userH) || isNaN(userM)) {
+                clock.card.className = 'clock-card';
+                continue;
+            }
+
+            answered++;
+            // Accept both 12h and 24h for the hour
+            const hOk = userH === clock.h || userH === clock.h + 12 || (clock.h === 12 && userH === 0);
+            const mOk = userM === clock.m;
+
+            if (hOk && mOk) {
+                clock.card.className = 'clock-card correct';
+                correct++;
+            } else {
+                clock.card.className = 'clock-card wrong';
+                allCorrect = false;
+            }
+        }
+
+        totalAnswered += answered;
+        totalCorrect += correct;
+        document.getElementById('score').textContent = totalCorrect;
+        document.getElementById('total').textContent = totalAnswered;
+
+        const result = document.getElementById('result');
+        if (answered < NUM_CLOCKS) {
+            result.textContent = 'Vyplň všetky hodiny!';
+            result.className = 'error';
+        } else if (allCorrect) {
+            result.textContent = 'Výborne! Všetko správne! 🎉';
+            result.className = 'success';
+        } else {
+            result.textContent = `${correct} z ${NUM_CLOCKS} správne. Skús znova!`;
+            result.className = 'error';
+        }
+    }
+
+    newRound();
+    </script>
+</body>
+</html>

@@ -43,6 +43,11 @@ def calendar():
     return send_from_directory(".", "calendar.html")
 
 
+@app.route("/clock/")
+def clock():
+    return send_from_directory(".", "clock.html")
+
+
 @app.route("/api/scores", methods=["POST"])
 @app.route("/apples/api/scores", methods=["POST"])
 def submit_score():
