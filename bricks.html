@@ -43,6 +43,22 @@
             </div>
         </div>
 
+        <h2 class="fruit-title">Vyber si pálku</h2>
+        <div class="fruit-options">
+            <div class="fruit-option active" onclick="selectPaddle('log', this)">
+                <canvas id="paddle-log-preview"></canvas>
+                <div class="subtitle">kmeň</div>
+            </div>
+            <div class="fruit-option" onclick="selectPaddle('stone', this)">
+                <canvas id="paddle-stone-preview"></canvas>
+                <div class="subtitle">kameň</div>
+            </div>
+            <div class="fruit-option" onclick="selectPaddle('mushroom', this)">
+                <canvas id="paddle-mushroom-preview"></canvas>
+                <div class="subtitle">hríb</div>
+            </div>
+        </div>
+
         <h2 class="fruit-title">Vyber si pozadie</h2>
         <div class="fruit-options">
             <div class="fruit-option active" onclick="selectBg('meadow', this)">
@@ -95,7 +111,9 @@
     const BRICK_W = W / BRICK_COLS - 2, BRICK_H = 18;
     const BRICK_PAD = 2, BRICK_TOP = 40;
     const ROW_COLORS = ['#e94560', '#f39c12', '#f4d03f', '#2ecc71', '#3498db', '#9b59b6'];
-    const BALL_SPEED = 4;
+    const BALL_SPEED_START = 2.5;
+    const BALL_SPEED_INCREMENT = 0.0003;
+    let ballSpeed;
 
     const BG_THEMES = {
         meadow: { sky: '#87CEEB', skyTop: '#B0E0FF', ground: '#2ecc71', groundLine: '#27ae60', tufts: '#1e8449', clouds: true },
@@ -108,6 +126,7 @@
     let canvas, ctx;
     let character = null;
     let ballColorChoice = 'white';
+    let paddleStyle = 'log';
     let bgMode = 'meadow';
     let paddleX, ballX, ballY, ballDX, ballDY;
     let bricks, score, lives, running, animFrame;
@@ -150,6 +169,15 @@
         lujzaC.width = 64; lujzaC.height = 64;
         drawLujza(lujzaC.getContext('2d'), 8, 8, 48);
 
+        // Paddle previews
+        const paddlePreviews = { 'paddle-log-preview': 'log', 'paddle-stone-preview': 'stone', 'paddle-mushroom-preview': 'mushroom' };
+        for (const [id, style] of Object.entries(paddlePreviews)) {
+            const c = document.getElementById(id);
+            if (!c) continue;
+            const cx = c.getContext('2d'); c.width = 48; c.height = 28;
+            drawPaddleStyle(cx, 4, 8, 40, 12, style);
+        }
+
         for (const [id, theme] of Object.entries(BG_THEMES)) {
             const c = document.getElementById('bg-' + id + '-preview');
             if (!c) continue;
@@ -177,6 +205,12 @@
         el.classList.add('active');
     }
 
+    function selectPaddle(s, el) {
+        paddleStyle = s;
+        el.parentElement.querySelectorAll('.fruit-option').forEach(o => o.classList.remove('active'));
+        el.classList.add('active');
+    }
+
     function selectBg(m, el) {
         bgMode = m;
         el.parentElement.querySelectorAll('.fruit-option').forEach(o => o.classList.remove('active'));
@@ -196,9 +230,9 @@
         ballX = W / 2;
         ballY = PADDLE_Y - BALL_R - 1;
         const angle = (-0.5 + Math.random()) * 0.8 - Math.PI / 2;
-        ballDX = Math.cos(angle) * BALL_SPEED;
-        ballDY = Math.sin(angle) * BALL_SPEED;
-        score = 0; lives = 3;
+        ballDX = Math.cos(angle) * ballSpeed;
+        ballDY = Math.sin(angle) * ballSpeed;
+        score = 0; lives = 3; ballSpeed = BALL_SPEED_START;
         bricks = [];
         for (let row = 0; row < BRICK_ROWS; row++) {
             for (let col = 0; col < BRICK_COLS; col++) {
@@ -235,6 +269,10 @@
         if (keys['ArrowLeft'] || keys['a']) paddleX = Math.max(0, paddleX - speed);
         if (keys['ArrowRight'] || keys['d']) paddleX = Math.min(W - PADDLE_W, paddleX + speed);
 
+        ballSpeed += BALL_SPEED_INCREMENT;
+        // Normalize and apply current speed
+        const mag = Math.sqrt(ballDX * ballDX + ballDY * ballDY);
+        if (mag > 0) { ballDX = (ballDX / mag) * ballSpeed; ballDY = (ballDY / mag) * ballSpeed; }
         ballX += ballDX; ballY += ballDY;
 
         if (ballX - BALL_R <= 0) { ballX = BALL_R; ballDX = Math.abs(ballDX); }
@@ -255,8 +293,8 @@
             ballX = paddleX + PADDLE_W / 2;
             ballY = PADDLE_Y - BALL_R - 1;
             const angle = (-0.5 + Math.random()) * 0.8 - Math.PI / 2;
-            ballDX = Math.cos(angle) * BALL_SPEED;
-            ballDY = Math.sin(angle) * BALL_SPEED;
+            ballDX = Math.cos(angle) * ballSpeed;
+            ballDY = Math.sin(angle) * ballSpeed;
         }
 
         let allDead = true;
@@ -273,6 +311,57 @@
             }
         }
         if (allDead) endGame(true);
+    }
+
+    function drawPaddleStyle(ctx, x, y, w, h, style) {
+        if (style === 'log') {
+            // Tree trunk / log
+            ctx.fillStyle = '#8B5E3C';
+            ctx.beginPath(); ctx.roundRect(x, y, w, h, 5); ctx.fill();
+            ctx.fillStyle = '#A07050';
+            ctx.fillRect(x + 3, y + 2, w - 6, h / 3);
+            // Bark lines
+            ctx.strokeStyle = '#6B4226'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(x + w * 0.25, y); ctx.lineTo(x + w * 0.25, y + h); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(x + w * 0.5, y); ctx.lineTo(x + w * 0.5, y + h); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(x + w * 0.75, y); ctx.lineTo(x + w * 0.75, y + h); ctx.stroke();
+            // Ring on ends
+            ctx.fillStyle = '#D4A56A';
+            ctx.beginPath(); ctx.ellipse(x + 2, y + h / 2, 3, h / 2 - 1, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(x + w - 2, y + h / 2, 3, h / 2 - 1, 0, 0, Math.PI * 2); ctx.fill();
+        } else if (style === 'stone') {
+            // Flat stone slab
+            ctx.fillStyle = '#778899';
+            ctx.beginPath(); ctx.roundRect(x, y + 2, w, h - 2, 3); ctx.fill();
+            ctx.fillStyle = '#8a9aaa';
+            ctx.fillRect(x + 3, y + 3, w - 6, (h - 2) / 3);
+            // Cracks
+            ctx.strokeStyle = '#667788'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(x + w * 0.3, y + 2); ctx.lineTo(x + w * 0.35, y + h); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(x + w * 0.65, y + 3); ctx.lineTo(x + w * 0.6, y + h - 1); ctx.stroke();
+            // Moss spots
+            ctx.fillStyle = '#5a8a5a';
+            ctx.fillRect(x + 5, y + h - 4, 4, 2);
+            ctx.fillRect(x + w - 12, y + h - 5, 5, 2);
+        } else if (style === 'mushroom') {
+            // Mushroom cap (wide, flat)
+            ctx.fillStyle = '#cc3333';
+            ctx.beginPath();
+            ctx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2 + 1, 0, Math.PI, 0);
+            ctx.fill();
+            ctx.fillStyle = '#ee5555';
+            ctx.beginPath();
+            ctx.ellipse(x + w / 2, y + h / 2 - 1, w / 2 - 2, h / 3, 0, Math.PI, 0);
+            ctx.fill();
+            // White spots
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(x + w * 0.25, y + 3, 3, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x + w * 0.55, y + 2, 2.5, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x + w * 0.8, y + 4, 2, 0, Math.PI * 2); ctx.fill();
+            // Bottom (gills)
+            ctx.fillStyle = '#f0d0a0';
+            ctx.fillRect(x + w * 0.15, y + h / 2, w * 0.7, h / 2);
+        }
     }
 
     function drawCloud(ctx, x, y, size) {
@@ -319,12 +408,7 @@
         else drawLujza(ctx, charX, charY, CHAR_SIZE);
 
         // Paddle on character's head
-        ctx.fillStyle = '#A0522D';
-        ctx.beginPath(); ctx.roundRect(paddleX, PADDLE_Y, PADDLE_W, PADDLE_H, 4); ctx.fill();
-        ctx.fillStyle = '#CD853F';
-        ctx.fillRect(paddleX + 3, PADDLE_Y + 2, PADDLE_W - 6, PADDLE_H / 3);
-        ctx.fillStyle = '#8B4513';
-        ctx.fillRect(paddleX + 2, PADDLE_Y + PADDLE_H - 4, PADDLE_W - 4, 2);
+        drawPaddleStyle(ctx, paddleX, PADDLE_Y, PADDLE_W, PADDLE_H, paddleStyle);
 
         // Ball
         const bc = BALL_COLORS_MAP[ballColorChoice] || '#fff';
