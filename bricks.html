@@ -5,170 +5,200 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Múr - Oto & Lujza</title>
     <link rel="icon" type="image/svg+xml" href="static/favicon.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #1a1a2e;
-            color: #e0e0e0;
-            font-family: 'Press Start 2P', monospace;
-            min-height: 100dvh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0.5rem;
-            overflow: hidden;
-        }
-        a.back { position: absolute; top: 0.5rem; left: 1rem; color: #888; text-decoration: none; font-size: 0.6rem; z-index: 10; }
-        a.back:hover { color: #e94560; }
-        h1 { font-size: clamp(0.8rem, 3vw, 1.2rem); color: #e94560; text-shadow: 2px 2px 0 #0f3460; margin: 0.3rem 0; }
-        #hud { font-size: 0.55rem; margin-bottom: 0.3rem; display: flex; gap: 1.5rem; }
-        #hud span { color: #e94560; }
-        canvas {
-            border: 2px solid #0f3460; border-radius: 4px;
-            max-width: 100%; max-height: calc(100dvh - 80px);
-        }
-        #game-over {
-            display: none; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); text-align: center; z-index: 10;
-        }
-        #game-over h2 { font-size: 1.2rem; color: #e94560; margin-bottom: 0.5rem; }
-        #game-over .score { font-size: 0.7rem; margin-bottom: 1rem; }
-        #game-over button {
-            font-family: 'Press Start 2P', monospace; font-size: 0.6rem;
-            padding: 0.6rem 1.2rem; background: #e94560; color: white;
-            border: none; border-radius: 4px; cursor: pointer; margin: 0.2rem;
-        }
-        #game-over button:hover { background: #c73652; }
-        #mobile-controls {
-            display: none; justify-content: center; gap: 2rem; padding: 0.3rem 0;
-        }
-        #mobile-controls button {
-            font-size: 2rem; width: 70px; height: 50px;
-            border: 3px solid #0f3460; border-radius: 8px;
-            background: #16213e; color: #e0e0e0; cursor: pointer;
-            user-select: none; -webkit-user-select: none; touch-action: manipulation;
-        }
-        #mobile-controls button:active { background: #e94560; border-color: #e94560; }
-        @media (pointer: coarse) { #mobile-controls { display: flex; } }
-        .opt.active { border-color: #e94560 !important; }
-    </style>
+    <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
-    <a href="/" class="back">&larr; hry</a>
+    <a href="/" style="position:absolute; top:1rem; left:1.5rem; color:#888; text-decoration:none; font-size:0.7rem; font-family:'Press Start 2P',monospace;" onmouseover="this.style.color='#e94560'" onmouseout="this.style.color='#888'">&larr; hry</a>
     <h1>Múr</h1>
+    <p class="subtitle">rozbi všetky tehly</p>
 
-    <div id="options" style="display:flex; gap:1rem; margin-bottom:0.5rem; flex-wrap:wrap; justify-content:center;">
-        <div style="text-align:center;">
-            <div style="font-size:0.4rem; color:#888; margin-bottom:0.3rem;">pálka</div>
-            <div style="display:flex; gap:0.3rem;">
-                <button class="opt active" data-group="paddle" onclick="setPaddle('wood',this)" style="background:#A0522D;width:28px;height:14px;border:2px solid #0f3460;border-radius:3px;cursor:pointer;"></button>
-                <button class="opt" data-group="paddle" onclick="setPaddle('metal',this)" style="background:#888;width:28px;height:14px;border:2px solid #0f3460;border-radius:3px;cursor:pointer;"></button>
-                <button class="opt" data-group="paddle" onclick="setPaddle('neon',this)" style="background:#0ff;width:28px;height:14px;border:2px solid #0f3460;border-radius:3px;cursor:pointer;"></button>
+    <div id="char-select">
+        <h2>Vyber si postavu</h2>
+        <div class="char-options">
+            <div class="char-option" onclick="selectCharacter('oto')">
+                <canvas id="oto-preview"></canvas>
+                <div class="name">Oto</div>
+                <div class="subtitle">ježko</div>
+            </div>
+            <div class="char-option" onclick="selectCharacter('lujza')">
+                <canvas id="lujza-preview"></canvas>
+                <div class="name">Lujza</div>
+                <div class="subtitle">veverička</div>
             </div>
         </div>
-        <div style="text-align:center;">
-            <div style="font-size:0.4rem; color:#888; margin-bottom:0.3rem;">lopta</div>
-            <div style="display:flex; gap:0.3rem;">
-                <button class="opt active" data-group="ball" onclick="setBall('white',this)" style="background:#fff;width:16px;height:16px;border:2px solid #0f3460;border-radius:50%;cursor:pointer;"></button>
-                <button class="opt" data-group="ball" onclick="setBall('red',this)" style="background:#e94560;width:16px;height:16px;border:2px solid #0f3460;border-radius:50%;cursor:pointer;"></button>
-                <button class="opt" data-group="ball" onclick="setBall('yellow',this)" style="background:#f4d03f;width:16px;height:16px;border:2px solid #0f3460;border-radius:50%;cursor:pointer;"></button>
-                <button class="opt" data-group="ball" onclick="setBall('cyan',this)" style="background:#0ff;width:16px;height:16px;border:2px solid #0f3460;border-radius:50%;cursor:pointer;"></button>
+
+        <h2 class="fruit-title">Vyber si loptu</h2>
+        <div class="fruit-options">
+            <div class="fruit-option active" onclick="selectBallColor('white', this)">
+                <div style="width:16px;height:16px;border-radius:50%;background:#fff;margin:8px auto;"></div>
+            </div>
+            <div class="fruit-option" onclick="selectBallColor('red', this)">
+                <div style="width:16px;height:16px;border-radius:50%;background:#e94560;margin:8px auto;"></div>
+            </div>
+            <div class="fruit-option" onclick="selectBallColor('yellow', this)">
+                <div style="width:16px;height:16px;border-radius:50%;background:#f4d03f;margin:8px auto;"></div>
+            </div>
+            <div class="fruit-option" onclick="selectBallColor('cyan', this)">
+                <div style="width:16px;height:16px;border-radius:50%;background:#0ff;margin:8px auto;"></div>
             </div>
         </div>
-        <div style="text-align:center;">
-            <div style="font-size:0.4rem; color:#888; margin-bottom:0.3rem;">pozadie</div>
-            <div style="display:flex; gap:0.3rem;">
-                <button class="opt active" data-group="bg" onclick="setBg('dark',this)" style="background:#16213e;width:20px;height:14px;border:2px solid #0f3460;border-radius:3px;cursor:pointer;"></button>
-                <button class="opt" data-group="bg" onclick="setBg('space',this)" style="background:#0a0a1a;width:20px;height:14px;border:2px solid #0f3460;border-radius:3px;cursor:pointer;"></button>
-                <button class="opt" data-group="bg" onclick="setBg('green',this)" style="background:#1a3a1a;width:20px;height:14px;border:2px solid #0f3460;border-radius:3px;cursor:pointer;"></button>
+
+        <h2 class="fruit-title">Vyber si pozadie</h2>
+        <div class="fruit-options">
+            <div class="fruit-option active" onclick="selectBg('meadow', this)">
+                <canvas id="bg-meadow-preview"></canvas>
+                <div class="subtitle">lúka</div>
+            </div>
+            <div class="fruit-option" onclick="selectBg('sunset', this)">
+                <canvas id="bg-sunset-preview"></canvas>
+                <div class="subtitle">západ</div>
+            </div>
+            <div class="fruit-option" onclick="selectBg('night', this)">
+                <canvas id="bg-night-preview"></canvas>
+                <div class="subtitle">noc</div>
+            </div>
+            <div class="fruit-option" onclick="selectBg('snow', this)">
+                <canvas id="bg-snow-preview"></canvas>
+                <div class="subtitle">sneh</div>
             </div>
         </div>
     </div>
 
-    <div id="hud">
-        <div>Skóre: <span id="score">0</span></div>
-        <div>Životy: <span id="lives">❤❤❤</span></div>
-    </div>
-    <canvas id="game"></canvas>
-    <div id="mobile-controls">
-        <button id="btn-left">&#9664;</button>
-        <button id="btn-right">&#9654;</button>
-    </div>
-    <div id="game-over">
-        <h2 id="end-title">Koniec hry!</h2>
-        <div class="score">Skóre: <span id="final-score">0</span></div>
-        <button onclick="startGame()">Hrať znova</button>
+    <div id="game-screen" style="display:none; position:relative;">
+        <div id="hud">
+            <div>Skóre: <span id="score">0</span></div>
+            <div id="lives">❤❤❤</div>
+        </div>
+        <canvas id="game"></canvas>
+        <div id="mobile-controls">
+            <button id="btn-left">&#9664;</button>
+            <button id="btn-right">&#9654;</button>
+        </div>
+        <div id="game-over">
+            <h2 id="end-title">Koniec hry!</h2>
+            <div class="score">Skóre: <span id="final-score">0</span></div>
+            <button onclick="startGame()">Hrať znova</button>
+            <button onclick="backToSelect()">Zmeniť postavu</button>
+        </div>
     </div>
 
+    <script src="static/js/sprites.js"></script>
+    <script src="static/js/sounds.js"></script>
     <script>
-    const W = 480, H = 600;
-    const PADDLE_W = 80, PADDLE_H = 14, PADDLE_Y = H - 30;
+    const W = 480, H = 640;
+    const PADDLE_W = 80, PADDLE_H = 14;
+    const CHAR_SIZE = 40;
+    const GROUND_H = 30;
+    const PADDLE_Y = H - GROUND_H - CHAR_SIZE - PADDLE_H + 6;
     const BALL_R = 6;
     const BRICK_ROWS = 6, BRICK_COLS = 10;
     const BRICK_W = W / BRICK_COLS - 2, BRICK_H = 18;
-    const BRICK_PAD = 2, BRICK_TOP = 50;
+    const BRICK_PAD = 2, BRICK_TOP = 40;
     const ROW_COLORS = ['#e94560', '#f39c12', '#f4d03f', '#2ecc71', '#3498db', '#9b59b6'];
-    const BALL_SPEED_START = 4;
+    const BALL_SPEED = 4;
 
-    const canvas = document.getElementById('game');
-    const ctx = canvas.getContext('2d');
-    canvas.width = W;
-    canvas.height = H;
+    const BG_THEMES = {
+        meadow: { sky: '#87CEEB', skyTop: '#B0E0FF', ground: '#2ecc71', groundLine: '#27ae60', tufts: '#1e8449', clouds: true },
+        sunset: { sky: '#e67e22', skyTop: '#f39c12', ground: '#5a3e2b', groundLine: '#4a2e1b', tufts: '#3a2010', clouds: true },
+        night: { sky: '#1a1a3e', skyTop: '#0d0d2b', ground: '#1a3a1a', groundLine: '#0f2a0f', tufts: '#0a200a', stars: true },
+        snow: { sky: '#c8d8e8', skyTop: '#dce8f0', ground: '#f0f0f5', groundLine: '#dde0e8', tufts: '#c8ccd5', clouds: true },
+    };
+    const BALL_COLORS_MAP = { white: '#fff', red: '#e94560', yellow: '#f4d03f', cyan: '#0ff' };
 
+    let canvas, ctx;
+    let character = null;
+    let ballColorChoice = 'white';
+    let bgMode = 'meadow';
     let paddleX, ballX, ballY, ballDX, ballDY;
     let bricks, score, lives, running, animFrame;
     let keys = {};
-    let paddleStyle = 'wood';
-    let ballColor = 'white';
-    let bgStyle = 'dark';
 
-    const PADDLE_STYLES = {
-        wood: { fill: '#A0522D', highlight: '#CD853F', stripe: '#8B4513' },
-        metal: { fill: '#777', highlight: '#aaa', stripe: '#555' },
-        neon: { fill: '#0ff', highlight: '#7fffff', stripe: '#00aaaa' },
-    };
-    const BALL_COLORS = { white: '#fff', red: '#e94560', yellow: '#f4d03f', cyan: '#0ff' };
-    const BG_STYLES = { dark: '#16213e', space: '#0a0a1a', green: '#1a3a1a' };
+    function init() {
+        canvas = document.getElementById('game');
+        ctx = canvas.getContext('2d');
+        canvas.width = W;
+        canvas.height = H;
 
-    function setPaddle(s, el) { paddleStyle = s; selectOpt(el, 'paddle'); }
-    function setBall(s, el) { ballColor = s; selectOpt(el, 'ball'); }
-    function setBg(s, el) { bgStyle = s; selectOpt(el, 'bg'); }
-    function selectOpt(el, group) {
-        document.querySelectorAll(`.opt[data-group="${group}"]`).forEach(b => b.classList.remove('active'));
+        document.addEventListener('keydown', e => {
+            keys[e.key] = true;
+            if (e.key === 'Escape' && running) endGame(false);
+        });
+        document.addEventListener('keyup', e => keys[e.key] = false);
+
+        const leftBtn = document.getElementById('btn-left');
+        const rightBtn = document.getElementById('btn-right');
+        leftBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowLeft'] = true; });
+        leftBtn.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowLeft'] = false; });
+        leftBtn.addEventListener('touchcancel', () => keys['ArrowLeft'] = false);
+        rightBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowRight'] = true; });
+        rightBtn.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowRight'] = false; });
+        rightBtn.addEventListener('touchcancel', () => keys['ArrowRight'] = false);
+        document.addEventListener('touchend', () => {
+            if (!leftBtn.matches(':active')) keys['ArrowLeft'] = false;
+            if (!rightBtn.matches(':active')) keys['ArrowRight'] = false;
+        });
+
+        setupPreviews();
+    }
+
+    function setupPreviews() {
+        const otoC = document.getElementById('oto-preview');
+        otoC.width = 64; otoC.height = 64;
+        drawOto(otoC.getContext('2d'), 8, 8, 48);
+
+        const lujzaC = document.getElementById('lujza-preview');
+        lujzaC.width = 64; lujzaC.height = 64;
+        drawLujza(lujzaC.getContext('2d'), 8, 8, 48);
+
+        for (const [id, theme] of Object.entries(BG_THEMES)) {
+            const c = document.getElementById('bg-' + id + '-preview');
+            if (!c) continue;
+            const cx = c.getContext('2d');
+            c.width = 48; c.height = 36;
+            cx.fillStyle = theme.sky; cx.fillRect(0, 0, 48, 36);
+            cx.fillStyle = theme.skyTop; cx.fillRect(0, 0, 48, 12);
+            cx.fillStyle = theme.ground; cx.fillRect(0, 28, 48, 8);
+            if (theme.stars) { cx.fillStyle = '#fff'; for (let i = 0; i < 8; i++) cx.fillRect((i*7+3)%44, (i*5+2)%20, 2, 2); }
+            if (theme.clouds) { cx.fillStyle = 'rgba(255,255,255,0.5)'; cx.beginPath(); cx.arc(15,10,5,0,Math.PI*2); cx.fill(); cx.beginPath(); cx.arc(35,8,4,0,Math.PI*2); cx.fill(); }
+        }
+    }
+
+    function selectCharacter(c) {
+        initAudio();
+        character = c;
+        document.getElementById('char-select').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'block';
+        startGame();
+    }
+
+    function selectBallColor(c, el) {
+        ballColorChoice = c;
+        el.parentElement.querySelectorAll('.fruit-option').forEach(o => o.classList.remove('active'));
         el.classList.add('active');
     }
 
-    document.addEventListener('keydown', e => {
-        keys[e.key] = true;
-        if (e.key === 'Escape' && running) endGame(false);
-    });
-    document.addEventListener('keyup', e => keys[e.key] = false);
+    function selectBg(m, el) {
+        bgMode = m;
+        el.parentElement.querySelectorAll('.fruit-option').forEach(o => o.classList.remove('active'));
+        el.classList.add('active');
+    }
 
-    // Mobile controls
-    const leftBtn = document.getElementById('btn-left');
-    const rightBtn = document.getElementById('btn-right');
-    leftBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowLeft'] = true; });
-    leftBtn.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowLeft'] = false; });
-    leftBtn.addEventListener('touchcancel', () => keys['ArrowLeft'] = false);
-    rightBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowRight'] = true; });
-    rightBtn.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowRight'] = false; });
-    rightBtn.addEventListener('touchcancel', () => keys['ArrowRight'] = false);
-    document.addEventListener('touchend', () => {
-        if (!leftBtn.matches(':active')) keys['ArrowLeft'] = false;
-        if (!rightBtn.matches(':active')) keys['ArrowRight'] = false;
-    });
+    function backToSelect() {
+        running = false;
+        if (animFrame) cancelAnimationFrame(animFrame);
+        document.getElementById('game-over').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'none';
+        document.getElementById('char-select').style.display = 'block';
+    }
 
     function startGame() {
         paddleX = W / 2 - PADDLE_W / 2;
         ballX = W / 2;
         ballY = PADDLE_Y - BALL_R - 1;
         const angle = (-0.5 + Math.random()) * 0.8 - Math.PI / 2;
-        ballDX = Math.cos(angle) * BALL_SPEED_START;
-        ballDY = Math.sin(angle) * BALL_SPEED_START;
-
-        score = 0;
-        lives = 3;
+        ballDX = Math.cos(angle) * BALL_SPEED;
+        ballDY = Math.sin(angle) * BALL_SPEED;
+        score = 0; lives = 3;
         bricks = [];
         for (let row = 0; row < BRICK_ROWS; row++) {
             for (let col = 0; col < BRICK_COLS; col++) {
@@ -176,13 +206,11 @@
                     x: col * (BRICK_W + BRICK_PAD) + BRICK_PAD,
                     y: BRICK_TOP + row * (BRICK_H + BRICK_PAD),
                     w: BRICK_W, h: BRICK_H,
-                    color: ROW_COLORS[row],
-                    alive: true,
+                    color: ROW_COLORS[row], alive: true,
                     points: (BRICK_ROWS - row) * 10,
                 });
             }
         }
-
         running = true;
         document.getElementById('game-over').style.display = 'none';
         updateHUD();
@@ -203,140 +231,127 @@
     }
 
     function update() {
-        // Move paddle
         const speed = 7;
         if (keys['ArrowLeft'] || keys['a']) paddleX = Math.max(0, paddleX - speed);
         if (keys['ArrowRight'] || keys['d']) paddleX = Math.min(W - PADDLE_W, paddleX + speed);
 
-        // Move ball
-        ballX += ballDX;
-        ballY += ballDY;
+        ballX += ballDX; ballY += ballDY;
 
-        // Wall collisions
         if (ballX - BALL_R <= 0) { ballX = BALL_R; ballDX = Math.abs(ballDX); }
         if (ballX + BALL_R >= W) { ballX = W - BALL_R; ballDX = -Math.abs(ballDX); }
         if (ballY - BALL_R <= 0) { ballY = BALL_R; ballDY = Math.abs(ballDY); }
 
-        // Paddle collision
-        if (ballDY > 0 &&
-            ballY + BALL_R >= PADDLE_Y &&
-            ballY + BALL_R <= PADDLE_Y + PADDLE_H + 4 &&
+        if (ballDY > 0 && ballY + BALL_R >= PADDLE_Y && ballY + BALL_R <= PADDLE_Y + PADDLE_H + 4 &&
             ballX >= paddleX && ballX <= paddleX + PADDLE_W) {
             ballDY = -Math.abs(ballDY);
-            // Angle based on where ball hits paddle
-            const hit = (ballX - paddleX) / PADDLE_W - 0.5;
-            ballDX = hit * 6;
+            ballDX = ((ballX - paddleX) / PADDLE_W - 0.5) * 6;
             ballY = PADDLE_Y - BALL_R;
+            playCatch();
         }
 
-        // Ball lost
         if (ballY - BALL_R > H) {
-            lives--;
-            updateHUD();
-            if (lives <= 0) {
-                endGame(false);
-                return;
-            }
-            // Reset ball
+            lives--; updateHUD(); playDrop();
+            if (lives <= 0) { endGame(false); return; }
             ballX = paddleX + PADDLE_W / 2;
             ballY = PADDLE_Y - BALL_R - 1;
             const angle = (-0.5 + Math.random()) * 0.8 - Math.PI / 2;
-            ballDX = Math.cos(angle) * BALL_SPEED_START;
-            ballDY = Math.sin(angle) * BALL_SPEED_START;
+            ballDX = Math.cos(angle) * BALL_SPEED;
+            ballDY = Math.sin(angle) * BALL_SPEED;
         }
 
-        // Brick collisions
         let allDead = true;
         for (const b of bricks) {
             if (!b.alive) continue;
             allDead = false;
             if (ballX + BALL_R > b.x && ballX - BALL_R < b.x + b.w &&
                 ballY + BALL_R > b.y && ballY - BALL_R < b.y + b.h) {
-                b.alive = false;
-                score += b.points;
-                updateHUD();
-
-                // Determine bounce direction
-                const overlapX = Math.min(ballX + BALL_R - b.x, b.x + b.w - (ballX - BALL_R));
-                const overlapY = Math.min(ballY + BALL_R - b.y, b.y + b.h - (ballY - BALL_R));
-                if (overlapX < overlapY) {
-                    ballDX = -ballDX;
-                } else {
-                    ballDY = -ballDY;
-                }
+                b.alive = false; score += b.points; updateHUD(); playCatch();
+                const ox = Math.min(ballX + BALL_R - b.x, b.x + b.w - (ballX - BALL_R));
+                const oy = Math.min(ballY + BALL_R - b.y, b.y + b.h - (ballY - BALL_R));
+                if (ox < oy) ballDX = -ballDX; else ballDY = -ballDY;
                 break;
             }
         }
-
         if (allDead) endGame(true);
     }
 
+    function drawCloud(ctx, x, y, size) {
+        ctx.beginPath();
+        ctx.arc(x, y, size * 0.4, 0, Math.PI * 2);
+        ctx.arc(x + size * 0.3, y - size * 0.15, size * 0.35, 0, Math.PI * 2);
+        ctx.arc(x + size * 0.6, y, size * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
     function draw() {
-        // Background
-        ctx.fillStyle = BG_STYLES[bgStyle] || BG_STYLES.dark;
-        ctx.fillRect(0, 0, W, H);
-        if (bgStyle === 'space') {
+        const bg = BG_THEMES[bgMode] || BG_THEMES.meadow;
+
+        ctx.fillStyle = bg.sky; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = bg.skyTop; ctx.fillRect(0, 0, W, H / 4);
+
+        if (bg.stars) {
             ctx.fillStyle = '#fff';
-            for (let i = 0; i < 30; i++) {
-                ctx.fillRect((i * 97 + 13) % W, (i * 53 + 7) % H, 1.5, 1.5);
-            }
+            for (let i = 0; i < 40; i++) ctx.fillRect((i*97+13)%W, (i*53+7)%(H-100), 2, 2);
         }
+        if (bg.clouds) {
+            ctx.fillStyle = bgMode === 'sunset' ? 'rgba(255,255,255,0.3)' : bgMode === 'snow' ? 'rgba(255,255,255,0.6)' : '#fff';
+            drawCloud(ctx, 50, 60, 50); drawCloud(ctx, 250, 30, 40); drawCloud(ctx, 400, 70, 35);
+        }
+
+        ctx.fillStyle = bg.ground; ctx.fillRect(0, H - GROUND_H, W, GROUND_H);
+        ctx.fillStyle = bg.groundLine; ctx.fillRect(0, H - GROUND_H, W, 4);
+        ctx.fillStyle = bg.tufts;
+        for (let i = 0; i < W; i += 12) ctx.fillRect(i, H - GROUND_H - 2, 3, 4);
 
         // Bricks
         for (const b of bricks) {
             if (!b.alive) continue;
             ctx.fillStyle = b.color;
-            ctx.beginPath();
-            ctx.roundRect(b.x, b.y, b.w, b.h, 3);
-            ctx.fill();
-            // Highlight
+            ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 3); ctx.fill();
             ctx.fillStyle = 'rgba(255,255,255,0.15)';
             ctx.fillRect(b.x + 2, b.y + 2, b.w - 4, b.h / 3);
         }
 
-        // Paddle
-        const ps = PADDLE_STYLES[paddleStyle] || PADDLE_STYLES.wood;
-        ctx.fillStyle = ps.fill;
-        ctx.beginPath();
-        ctx.roundRect(paddleX, PADDLE_Y, PADDLE_W, PADDLE_H, 4);
-        ctx.fill();
-        // Highlight
-        ctx.fillStyle = ps.highlight;
+        // Character standing on ground
+        const charX = paddleX + PADDLE_W / 2 - CHAR_SIZE / 2;
+        const charY = H - GROUND_H - CHAR_SIZE;
+        if (character === 'oto') drawOto(ctx, charX, charY, CHAR_SIZE);
+        else drawLujza(ctx, charX, charY, CHAR_SIZE);
+
+        // Paddle on character's head
+        ctx.fillStyle = '#A0522D';
+        ctx.beginPath(); ctx.roundRect(paddleX, PADDLE_Y, PADDLE_W, PADDLE_H, 4); ctx.fill();
+        ctx.fillStyle = '#CD853F';
         ctx.fillRect(paddleX + 3, PADDLE_Y + 2, PADDLE_W - 6, PADDLE_H / 3);
-        // Stripe detail
-        ctx.fillStyle = ps.stripe;
+        ctx.fillStyle = '#8B4513';
         ctx.fillRect(paddleX + 2, PADDLE_Y + PADDLE_H - 4, PADDLE_W - 4, 2);
 
         // Ball
-        const bc = BALL_COLORS[ballColor] || '#fff';
+        const bc = BALL_COLORS_MAP[ballColorChoice] || '#fff';
         ctx.fillStyle = bc;
-        ctx.beginPath();
-        ctx.arc(ballX, ballY, BALL_R, 0, Math.PI * 2);
-        ctx.fill();
-        // Ball glow
-        ctx.fillStyle = bc.replace(')', ',0.2)').replace('rgb', 'rgba').replace('#', '');
-        ctx.globalAlpha = 0.3;
-        ctx.beginPath();
-        ctx.arc(ballX, ballY, BALL_R + 3, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(ballX, ballY, BALL_R, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 0.3; ctx.beginPath(); ctx.arc(ballX, ballY, BALL_R + 3, 0, Math.PI * 2); ctx.fill();
         ctx.globalAlpha = 1;
 
-        // Score on canvas
-        ctx.fillStyle = '#555';
-        ctx.font = '10px "Press Start 2P", monospace';
-        ctx.fillText('Skóre: ' + score, 10, 20);
+        // Lives as hearts
+        for (let i = 0; i < lives; i++) drawHeart(ctx, W - 30 - i * 25, 10, 20);
+
+        // Score
+        ctx.fillStyle = '#1a1a2e';
+        ctx.font = '12px "Press Start 2P", monospace';
+        ctx.fillText('Skóre: ' + score, 10, 22);
     }
 
     function endGame(won) {
         running = false;
         cancelAnimationFrame(animFrame);
-        const title = document.getElementById('end-title');
-        title.textContent = won ? 'Výborne! 🎉' : 'Koniec hry!';
+        if (won) playCatch(); else playGameOver();
+        document.getElementById('end-title').textContent = won ? 'Výborne! 🎉' : 'Koniec hry!';
         document.getElementById('final-score').textContent = score;
         document.getElementById('game-over').style.display = 'block';
     }
 
-    startGame();
+    window.addEventListener('load', init);
     </script>
 </body>
 </html>
