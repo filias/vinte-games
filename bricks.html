@@ -10,7 +10,10 @@
 <body>
     <a href="/" style="position:absolute; top:1rem; left:1.5rem; color:#888; text-decoration:none; font-size:0.7rem; font-family:'Press Start 2P',monospace;" onmouseover="this.style.color='#e94560'" onmouseout="this.style.color='#888'">&larr; hry</a>
     <h1>Múr</h1>
-    <p class="subtitle">rozbi všetky tehly</p>
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+        <p class="subtitle" style="margin:0">rozbi všetky tehly</p>
+        <button class="leaderboard-btn" onclick="showLeaderboard()" style="margin:0; font-size:0.55rem; padding:0.4rem 0.8rem;">🏆 Rebríček</button>
+    </div>
 
     <div id="char-select">
         <h2>Vyber si postavu</h2>
@@ -93,9 +96,25 @@
         <div id="game-over">
             <h2 id="end-title">Koniec hry!</h2>
             <div class="score">Skóre: <span id="final-score">0</span></div>
+            <div id="name-input-area">
+                <input type="text" id="player-name" placeholder="Tvoje meno" maxlength="20"
+                    autocomplete="off" spellcheck="false"
+                    style="font-family:'Press Start 2P',monospace; font-size:0.6rem; padding:0.6rem 1rem; border:2px solid #0f3460; border-radius:4px; background:#16213e; color:#e0e0e0; outline:none; width:180px; margin-bottom:0.5rem;">
+                <button onclick="submitScore()">Uložiť skóre</button>
+            </div>
             <button onclick="startGame()">Hrať znova</button>
             <button onclick="backToSelect()">Zmeniť postavu</button>
         </div>
+    </div>
+
+    <div id="leaderboard" style="display:none; text-align:center; max-width:400px; width:90vw;">
+        <h2 style="font-size:1.2rem; color:#e94560; margin-bottom:1rem;">Rebríček</h2>
+        <div class="lb-tabs" style="display:flex; justify-content:center; gap:0.5rem; margin-bottom:1rem;">
+            <button class="lb-tab active" onclick="switchTab('weekly', this)" style="font-family:'Press Start 2P',monospace; font-size:0.6rem; padding:0.5rem 1rem; border:2px solid #0f3460; border-radius:4px; background:transparent; color:#e94560; cursor:pointer; border-color:#e94560;">Týždeň</button>
+            <button class="lb-tab" onclick="switchTab('total', this)" style="font-family:'Press Start 2P',monospace; font-size:0.6rem; padding:0.5rem 1rem; border:2px solid #0f3460; border-radius:4px; background:transparent; color:#888; cursor:pointer;">Celkovo</button>
+        </div>
+        <div id="lb-list"></div>
+        <button onclick="hideLeaderboard()" style="font-family:'Press Start 2P',monospace; font-size:0.6rem; padding:0.6rem 1.2rem; background:#e94560; color:white; border:none; border-radius:4px; cursor:pointer; margin-top:1rem;">Späť</button>
     </div>
 
     <script src="/static/js/sprites.js"></script>
@@ -426,16 +445,125 @@
         ctx.fillText('Skóre: ' + score, 10, 22);
     }
 
-    function endGame(won) {
+    let highScore = 0;
+
+    async function fetchHighScore() {
+        try {
+            const resp = await fetch('api/scores');
+            const data = await resp.json();
+            if (data.total && data.total.length > 0) {
+                highScore = data.total[0].score;
+            }
+        } catch (e) {}
+    }
+
+    async function endGame(won) {
         running = false;
         cancelAnimationFrame(animFrame);
         if (won) playCatch(); else playGameOver();
         document.getElementById('end-title').textContent = won ? 'Výborne! 🎉' : 'Koniec hry!';
         document.getElementById('final-score').textContent = score;
+
+        // Check if top 15
+        let isTop = false;
+        try {
+            const resp = await fetch('api/scores');
+            const data = await resp.json();
+            const topScores = data.total || [];
+            isTop = topScores.length < 15 || score > (topScores[topScores.length - 1]?.score || 0);
+        } catch (e) { isTop = true; }
+
+        if (isTop && score > 0) {
+            const savedName = localStorage.getItem('vinte-player-name') || '';
+            if (savedName) {
+                document.getElementById('name-input-area').style.display = 'none';
+                try {
+                    await fetch('api/scores', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({name: savedName, score, character, extra: paddleStyle}),
+                    });
+                } catch (e) {}
+                if (score > highScore) highScore = score;
+                document.getElementById('game-over').style.display = 'none';
+                document.getElementById('game-screen').style.display = 'none';
+                await showLeaderboard();
+                return;
+            }
+            document.getElementById('name-input-area').style.display = 'block';
+            document.getElementById('player-name').value = '';
+            document.getElementById('player-name').focus();
+        } else {
+            document.getElementById('name-input-area').style.display = 'none';
+        }
         document.getElementById('game-over').style.display = 'block';
     }
 
-    window.addEventListener('load', init);
+    async function submitScore() {
+        const nameInput = document.getElementById('player-name');
+        const name = nameInput.value.trim();
+        if (!name) { nameInput.focus(); return; }
+        localStorage.setItem('vinte-player-name', name);
+        try {
+            await fetch('api/scores', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name, score, character, extra: paddleStyle}),
+            });
+        } catch (e) {}
+        if (score > highScore) highScore = score;
+        document.getElementById('game-over').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'none';
+        await showLeaderboard();
+    }
+
+    let currentLbTab = 'weekly';
+    let lbData = null;
+
+    async function showLeaderboard() {
+        document.getElementById('char-select').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'none';
+        document.getElementById('leaderboard').style.display = 'block';
+        try {
+            const resp = await fetch('/api/scores/bricks');
+            lbData = await resp.json();
+        } catch (e) { lbData = {total: [], weekly: []}; }
+        renderLeaderboard();
+    }
+
+    function hideLeaderboard() {
+        document.getElementById('leaderboard').style.display = 'none';
+        document.getElementById('char-select').style.display = 'block';
+    }
+
+    function switchTab(tab, btn) {
+        currentLbTab = tab;
+        document.querySelectorAll('.lb-tab').forEach(t => { t.classList.remove('active'); t.style.borderColor = '#0f3460'; t.style.color = '#888'; });
+        btn.classList.add('active'); btn.style.borderColor = '#e94560'; btn.style.color = '#e94560';
+        renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+        const list = document.getElementById('lb-list');
+        const data = lbData ? lbData[currentLbTab] : [];
+        if (!data || data.length === 0) {
+            list.innerHTML = '<p style="color:#555; font-size:0.6rem; padding:2rem 0;">Zatiaľ žiadne skóre</p>';
+            return;
+        }
+        const playerName = localStorage.getItem('vinte-player-name') || '';
+        let highlighted = false;
+        list.innerHTML = data.map((entry, i) => {
+            const isPlayer = !highlighted && entry.name === playerName && entry.score === score;
+            if (isPlayer) highlighted = true;
+            return `<div style="display:flex; justify-content:space-between; padding:0.4rem 0.8rem; font-size:0.6rem; border-bottom:1px solid #0f3460; ${isPlayer ? 'background:#0f3460; border-radius:4px;' : ''}">
+                <span style="color:#e94560; width:2rem; text-align:left;">${i + 1}.</span>
+                <span style="flex:1; text-align:left; ${isPlayer ? 'color:#e94560;' : ''}">${entry.name}</span>
+                <span style="color:#e94560; width:4rem; text-align:right;">${entry.score}</span>
+            </div>`;
+        }).join('');
+    }
+
+    window.addEventListener('load', () => { init(); fetchHighScore(); });
     </script>
 </body>
 </html>

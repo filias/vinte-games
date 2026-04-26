@@ -1,6 +1,5 @@
-"""Vinte Games — Flask backend for leaderboard."""
+"""Vinte Games — Flask backend for leaderboards."""
 
-import json
 import os
 import sqlite3
 from datetime import datetime, timedelta
@@ -18,6 +17,7 @@ def get_db():
     conn.execute(
         """CREATE TABLE IF NOT EXISTS scores (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            game TEXT NOT NULL DEFAULT 'apples',
             name TEXT NOT NULL,
             score INTEGER NOT NULL,
             character TEXT,
@@ -25,8 +25,16 @@ def get_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )"""
     )
+    # Add game column if missing (existing DBs)
+    try:
+        conn.execute("SELECT game FROM scores LIMIT 1")
+    except sqlite3.OperationalError:
+        conn.execute("ALTER TABLE scores ADD COLUMN game TEXT NOT NULL DEFAULT 'apples'")
+        conn.commit()
     return conn
 
+
+# --- Pages ---
 
 @app.route("/")
 def home():
@@ -53,41 +61,42 @@ def bricks():
     return send_from_directory(".", "bricks.html")
 
 
-@app.route("/api/scores", methods=["POST"])
-@app.route("/apples/api/scores", methods=["POST"])
-def submit_score():
+# --- Scores API (game-aware) ---
+
+@app.route("/api/scores/<game>", methods=["POST"])
+@app.route("/<game>/api/scores", methods=["POST"])
+def submit_score(game):
     data = request.json
     name = data.get("name", "").strip()[:20]
     score = data.get("score", 0)
     character = data.get("character", "")
-    fruit = data.get("fruit", "")
+    extra = data.get("extra", "")
     if not name or not isinstance(score, int):
         return jsonify({"error": "Invalid data"}), 400
     db = get_db()
     db.execute(
-        "INSERT INTO scores (name, score, character, fruit) VALUES (?, ?, ?, ?)",
-        (name, score, character, fruit),
+        "INSERT INTO scores (game, name, score, character, fruit) VALUES (?, ?, ?, ?, ?)",
+        (game, name, score, character, extra),
     )
     db.commit()
     db.close()
     return jsonify({"ok": True})
 
 
-@app.route("/api/scores")
-@app.route("/apples/api/scores")
-def get_scores():
+@app.route("/api/scores/<game>")
+@app.route("/<game>/api/scores")
+def get_scores(game):
     db = get_db()
-    # All time top 15
     total = db.execute(
-        "SELECT name, score, character, created_at FROM scores ORDER BY score DESC LIMIT 15"
+        "SELECT name, score, character, created_at FROM scores WHERE game = ? ORDER BY score DESC LIMIT 15",
+        (game,),
     ).fetchall()
-    # Weekly top 15 (week starts Monday 00:00 UTC)
     now = datetime.utcnow()
     monday = now - timedelta(days=now.weekday())
     week_start = monday.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
     weekly = db.execute(
-        "SELECT name, score, character, created_at FROM scores WHERE created_at >= ? ORDER BY score DESC LIMIT 15",
-        (week_start,),
+        "SELECT name, score, character, created_at FROM scores WHERE game = ? AND created_at >= ? ORDER BY score DESC LIMIT 15",
+        (game, week_start),
     ).fetchall()
     db.close()
     return jsonify(
@@ -98,8 +107,11 @@ def get_scores():
     )
 
 
+# --- Static files for sub-paths ---
+
 @app.route("/apples/static/<path:filename>")
-def apples_static(filename):
+@app.route("/bricks/static/<path:filename>")
+def game_static(filename):
     return send_from_directory("static", filename)
 
 
