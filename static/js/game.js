@@ -389,26 +389,9 @@ async function endGame() {
     }
 
     if (isTop && score > 0) {
-        // Auto-submit if we have a saved name, otherwise ask
-        const savedName = localStorage.getItem('vinte-player-name') || '';
-        if (savedName) {
-            document.getElementById('name-input-area').style.display = 'none';
-            // Submit and go to leaderboard
-            try {
-                await fetch('api/scores', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({name: savedName, score, character, fruit: fruitMode}),
-                });
-            } catch (e) {}
-            if (score > highScore) highScore = score;
-            document.getElementById('game-over').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'none';
-            await showLeaderboard();
-            return;
-        }
         document.getElementById('name-input-area').style.display = 'block';
-        document.getElementById('player-name').value = '';
+        const savedName = localStorage.getItem('vinte-player-name') || '';
+        document.getElementById('player-name').value = savedName;
         document.getElementById('player-name').focus();
     } else {
         document.getElementById('name-input-area').style.display = 'none';

@@ -253,29 +253,57 @@
     function buildLevel() {
         ballX = W / 2;
         ballY = PADDLE_Y - BALL_R - 1;
-        ballSpeed = BALL_SPEED_START + (level - 1) * 0.3;
+        ballSpeed = BALL_SPEED_START + (level - 1) * 0.1;
         const angle = (-0.5 + Math.random()) * 0.8 - Math.PI / 2;
         ballDX = Math.cos(angle) * ballSpeed;
         ballDY = Math.sin(angle) * ballSpeed;
 
-        const rows = 3 + level; // level 1 = 4 rows, level 2 = 5, etc.
-        const halfBrick = (BRICK_W + BRICK_PAD) / 2;
+        const rows = 5 + level; // level 1 = 6 rows, level 2 = 7, etc.
+        const brickStep = BRICK_W + BRICK_PAD;
+        const halfBrick = brickStep / 2;
+        const halfW = BRICK_W / 2 - 1;
 
         bricks = [];
         for (let row = 0; row < rows; row++) {
             const isOdd = row % 2 === 1;
-            const cols = isOdd ? BRICK_COLS - 1 : BRICK_COLS;
-            const offsetX = isOdd ? halfBrick : 0;
             const colorIdx = row % ROW_COLORS.length;
+            const rowPoints = (rows - row) * 10;
+            const rowY = BRICK_TOP + row * (BRICK_H + BRICK_PAD);
 
-            for (let col = 0; col < cols; col++) {
+            if (isOdd) {
+                // Offset row: half brick on left edge
                 bricks.push({
-                    x: offsetX + col * (BRICK_W + BRICK_PAD) + BRICK_PAD,
-                    y: BRICK_TOP + row * (BRICK_H + BRICK_PAD),
-                    w: BRICK_W, h: BRICK_H,
+                    x: BRICK_PAD, y: rowY,
+                    w: halfW, h: BRICK_H,
                     color: ROW_COLORS[colorIdx], alive: true,
-                    points: (rows - row) * 10,
+                    points: Math.floor(rowPoints / 2),
                 });
+                // Full bricks in the middle
+                for (let col = 0; col < BRICK_COLS - 1; col++) {
+                    bricks.push({
+                        x: halfBrick + col * brickStep + BRICK_PAD, y: rowY,
+                        w: BRICK_W, h: BRICK_H,
+                        color: ROW_COLORS[colorIdx], alive: true,
+                        points: rowPoints,
+                    });
+                }
+                // Half brick on right edge
+                bricks.push({
+                    x: halfBrick + (BRICK_COLS - 1) * brickStep + BRICK_PAD, y: rowY,
+                    w: halfW, h: BRICK_H,
+                    color: ROW_COLORS[colorIdx], alive: true,
+                    points: Math.floor(rowPoints / 2),
+                });
+            } else {
+                // Even row: full bricks
+                for (let col = 0; col < BRICK_COLS; col++) {
+                    bricks.push({
+                        x: col * brickStep + BRICK_PAD, y: rowY,
+                        w: BRICK_W, h: BRICK_H,
+                        color: ROW_COLORS[colorIdx], alive: true,
+                        points: rowPoints,
+                    });
+                }
             }
         }
         running = true;
@@ -494,24 +522,9 @@
         } catch (e) { isTop = true; }
 
         if (isTop && score > 0) {
-            const savedName = localStorage.getItem('vinte-player-name') || '';
-            if (savedName) {
-                document.getElementById('name-input-area').style.display = 'none';
-                try {
-                    await fetch('api/scores', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({name: savedName, score, character, extra: paddleStyle}),
-                    });
-                } catch (e) {}
-                if (score > highScore) highScore = score;
-                document.getElementById('game-over').style.display = 'none';
-                document.getElementById('game-screen').style.display = 'none';
-                await showLeaderboard();
-                return;
-            }
             document.getElementById('name-input-area').style.display = 'block';
-            document.getElementById('player-name').value = '';
+            const savedName = localStorage.getItem('vinte-player-name') || '';
+            document.getElementById('player-name').value = savedName;
             document.getElementById('player-name').focus();
         } else {
             document.getElementById('name-input-area').style.display = 'none';
