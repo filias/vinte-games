@@ -252,9 +252,9 @@
 
     function buildLevel() {
         ballX = W / 2;
-        ballY = H / 2;  // Start from the middle
+        ballY = PADDLE_Y - BALL_R - 1;
         ballSpeed = BALL_SPEED_START + (level - 1) * 0.1;
-        const angle = (0.3 + Math.random() * 0.4) * (Math.random() < 0.5 ? 1 : -1) + Math.PI / 2;  // Downward
+        const angle = (-0.5 + Math.random()) * 0.8 - Math.PI / 2;
         ballDX = Math.cos(angle) * ballSpeed;
         ballDY = Math.sin(angle) * ballSpeed;
 
@@ -356,9 +356,9 @@
         if (ballY - BALL_R > H) {
             lives--; updateHUD(); playDrop();
             if (lives <= 0) { endGame(false); return; }
-            ballX = W / 2;
-            ballY = H / 2;
-            const angle = (0.3 + Math.random() * 0.4) * (Math.random() < 0.5 ? 1 : -1) + Math.PI / 2;
+            ballX = paddleX + PADDLE_W / 2;
+            ballY = PADDLE_Y - BALL_R - 1;
+            const angle = (-0.5 + Math.random()) * 0.8 - Math.PI / 2;
             ballDX = Math.cos(angle) * ballSpeed;
             ballDY = Math.sin(angle) * ballSpeed;
         }
