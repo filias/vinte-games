@@ -126,10 +126,10 @@
     const GROUND_H = 30;
     const PADDLE_Y = H - GROUND_H - CHAR_SIZE - PADDLE_H + 6;
     const BALL_R = 6;
-    const BRICK_ROWS = 6, BRICK_COLS = 10;
+    const BRICK_COLS = 10;
     const BRICK_W = W / BRICK_COLS - 2, BRICK_H = 18;
     const BRICK_PAD = 2, BRICK_TOP = 40;
-    const ROW_COLORS = ['#e94560', '#f39c12', '#f4d03f', '#2ecc71', '#3498db', '#9b59b6'];
+    const ROW_COLORS = ['#e94560', '#f39c12', '#f4d03f', '#2ecc71', '#3498db', '#9b59b6', '#e67e22', '#1abc9c', '#e84393', '#6c5ce7'];
     const BALL_SPEED_START = 2.5;
     const BALL_SPEED_INCREMENT = 0.0003;
     let ballSpeed;
@@ -148,7 +148,7 @@
     let paddleStyle = 'log';
     let bgMode = 'meadow';
     let paddleX, ballX, ballY, ballDX, ballDY;
-    let bricks, score, lives, running, animFrame;
+    let bricks, score, lives, level, running, animFrame;
     let keys = {};
 
     function init() {
@@ -246,21 +246,35 @@
 
     function startGame() {
         paddleX = W / 2 - PADDLE_W / 2;
+        score = 0; lives = 3; level = 1;
+        buildLevel();
+    }
+
+    function buildLevel() {
         ballX = W / 2;
         ballY = PADDLE_Y - BALL_R - 1;
-        score = 0; lives = 3; ballSpeed = BALL_SPEED_START;
+        ballSpeed = BALL_SPEED_START + (level - 1) * 0.3;
         const angle = (-0.5 + Math.random()) * 0.8 - Math.PI / 2;
         ballDX = Math.cos(angle) * ballSpeed;
         ballDY = Math.sin(angle) * ballSpeed;
+
+        const rows = 3 + level; // level 1 = 4 rows, level 2 = 5, etc.
+        const halfBrick = (BRICK_W + BRICK_PAD) / 2;
+
         bricks = [];
-        for (let row = 0; row < BRICK_ROWS; row++) {
-            for (let col = 0; col < BRICK_COLS; col++) {
+        for (let row = 0; row < rows; row++) {
+            const isOdd = row % 2 === 1;
+            const cols = isOdd ? BRICK_COLS - 1 : BRICK_COLS;
+            const offsetX = isOdd ? halfBrick : 0;
+            const colorIdx = row % ROW_COLORS.length;
+
+            for (let col = 0; col < cols; col++) {
                 bricks.push({
-                    x: col * (BRICK_W + BRICK_PAD) + BRICK_PAD,
+                    x: offsetX + col * (BRICK_W + BRICK_PAD) + BRICK_PAD,
                     y: BRICK_TOP + row * (BRICK_H + BRICK_PAD),
                     w: BRICK_W, h: BRICK_H,
-                    color: ROW_COLORS[row], alive: true,
-                    points: (BRICK_ROWS - row) * 10,
+                    color: ROW_COLORS[colorIdx], alive: true,
+                    points: (rows - row) * 10,
                 });
             }
         }
@@ -274,6 +288,11 @@
     function updateHUD() {
         document.getElementById('score').textContent = score;
         document.getElementById('lives').textContent = '❤'.repeat(lives);
+    }
+
+    function nextLevel() {
+        level++;
+        buildLevel();
     }
 
     function loop() {
@@ -329,7 +348,7 @@
                 break;
             }
         }
-        if (allDead) endGame(true);
+        if (allDead) nextLevel();
     }
 
     function drawPaddleStyle(ctx, x, y, w, h, style) {
@@ -439,10 +458,11 @@
         // Lives as hearts
         for (let i = 0; i < lives; i++) drawHeart(ctx, W - 30 - i * 25, 10, 20);
 
-        // Score
+        // Score & Level
         ctx.fillStyle = '#1a1a2e';
-        ctx.font = '12px "Press Start 2P", monospace';
-        ctx.fillText('Skóre: ' + score, 10, 22);
+        ctx.font = '10px "Press Start 2P", monospace';
+        ctx.fillText('Skóre: ' + score, 10, 18);
+        ctx.fillText('Level: ' + level, 10, 32);
     }
 
     let highScore = 0;
