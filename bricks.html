@@ -307,6 +307,7 @@
             }
         }
         running = true;
+        lastBricksFrame = 0;
         document.getElementById('game-over').style.display = 'none';
         updateHUD();
         if (animFrame) cancelAnimationFrame(animFrame);
@@ -323,23 +324,28 @@
         buildLevel();
     }
 
-    function loop() {
+    let lastBricksFrame = 0;
+
+    function loop(timestamp) {
         if (!running) return;
-        update();
+        if (!lastBricksFrame) lastBricksFrame = timestamp;
+        const dt = Math.min((timestamp - lastBricksFrame) / 16.67, 3);
+        lastBricksFrame = timestamp;
+        update(dt);
         draw();
         animFrame = requestAnimationFrame(loop);
     }
 
-    function update() {
-        const speed = 6;
+    function update(dt) {
+        const speed = 6 * dt;
         if (keys['ArrowLeft'] || keys['a']) paddleX = Math.max(0, paddleX - speed);
         if (keys['ArrowRight'] || keys['d']) paddleX = Math.min(W - PADDLE_W, paddleX + speed);
 
-        ballSpeed += BALL_SPEED_INCREMENT;
+        ballSpeed += BALL_SPEED_INCREMENT * dt;
         // Normalize and apply current speed
         const mag = Math.sqrt(ballDX * ballDX + ballDY * ballDY);
         if (mag > 0) { ballDX = (ballDX / mag) * ballSpeed; ballDY = (ballDY / mag) * ballSpeed; }
-        ballX += ballDX; ballY += ballDY;
+        ballX += ballDX * dt; ballY += ballDY * dt;
 
         if (ballX - BALL_R <= 0) { ballX = BALL_R; ballDX = Math.abs(ballDX); }
         if (ballX + BALL_R >= W) { ballX = W - BALL_R; ballDX = -Math.abs(ballDX); }
