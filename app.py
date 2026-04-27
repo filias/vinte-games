@@ -93,7 +93,7 @@ def get_scores(game):
     ).fetchall()
     now = datetime.utcnow()
     monday = now - timedelta(days=now.weekday())
-    week_start = monday.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    week_start = monday.replace(hour=0, minute=0, second=0, microsecond=0).strftime("%Y-%m-%d %H:%M:%S")
     weekly = db.execute(
         "SELECT name, score, character, created_at FROM scores WHERE game = ? AND created_at >= ? ORDER BY score DESC LIMIT 15",
         (game, week_start),
