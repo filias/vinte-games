@@ -5,11 +5,11 @@ const BASKET_W = 60;
 const BASKET_H = 40;
 const APPLE_SIZE = 28;
 const CHAR_SIZE = 48;
-const INITIAL_SPEED = 1.5;
-const SPEED_INCREMENT = 0.0003;
-const SPAWN_INTERVAL_START = 1100;
-const SPAWN_INTERVAL_MIN = 400;
-const SPAWN_INTERVAL_DECAY = 0.998;
+const INITIAL_SPEED = 2;
+const SPEED_INCREMENT = 0.0005;
+const SPAWN_INTERVAL_START = 1200;
+const SPAWN_INTERVAL_MIN = 350;
+const SPAWN_INTERVAL_DECAY = 0.997;
 
 let canvas, ctx;
 let character = null; // 'oto' or 'lujza'
@@ -26,6 +26,7 @@ let spawnInterval;
 let lastSpawn = 0;
 let gameRunning = false;
 let animFrame;
+let lastFrameTime = 0;
 let keys = {};
 let touchStartX = null;
 
@@ -188,6 +189,7 @@ function startGame() {
     speed = INITIAL_SPEED;
     spawnInterval = SPAWN_INTERVAL_START;
     lastSpawn = 0;
+    lastFrameTime = 0;
     gameRunning = true;
     document.getElementById('game-over').style.display = 'none';
     updateHUD();
@@ -197,14 +199,18 @@ function startGame() {
 function gameLoop(timestamp) {
     if (!gameRunning) return;
 
-    update(timestamp);
+    if (!lastFrameTime) lastFrameTime = timestamp;
+    const dt = Math.min((timestamp - lastFrameTime) / 16.67, 3); // normalize to 60fps, cap at 3x
+    lastFrameTime = timestamp;
+
+    update(timestamp, dt);
     draw();
     animFrame = requestAnimationFrame(gameLoop);
 }
 
-function update(timestamp) {
-    // Move basket with keyboard
-    const moveSpeed = 6;
+function update(timestamp, dt) {
+    // Move basket with keyboard (dt-scaled)
+    const moveSpeed = 6 * dt;
     let moved = false;
     if (keys['ArrowLeft'] || keys['a']) {
         basketX = Math.max(0, basketX - moveSpeed);
@@ -230,13 +236,13 @@ function update(timestamp) {
         spawnInterval = Math.max(SPAWN_INTERVAL_MIN, spawnInterval * SPAWN_INTERVAL_DECAY);
     }
 
-    // Increase speed over time
-    speed += SPEED_INCREMENT;
+    // Increase speed over time (dt-scaled)
+    speed += SPEED_INCREMENT * dt;
 
-    // Update apples
+    // Update apples (dt-scaled)
     for (let i = apples.length - 1; i >= 0; i--) {
         const apple = apples[i];
-        apple.y += apple.speed;
+        apple.y += apple.speed * dt;
 
         // Check basket catch (basket is on top of character's head)
         const appleCenter = apple.x + APPLE_SIZE / 2;
