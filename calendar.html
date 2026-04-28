@@ -46,6 +46,27 @@
             align-items: center; margin-bottom: 1rem;
         }
 
+        .slots-circle {
+            position: relative;
+            width: min(350px, 85vw);
+            height: min(350px, 85vw);
+            margin: 0 auto 1rem;
+        }
+
+        .slots-circle .slot {
+            position: absolute;
+            width: auto;
+            min-width: 70px;
+            height: 32px;
+            transform: translate(-50%, -50%);
+            font-size: clamp(0.3rem, 1vw, 0.45rem);
+        }
+
+        .slots-circle .item {
+            font-size: clamp(0.3rem, 1vw, 0.45rem);
+            padding: 0.3rem 0.5rem;
+        }
+
         /* Individual slot */
         .slot {
             width: clamp(50px, 12vw, 80px); height: 44px;
@@ -109,6 +130,7 @@
     <a href="/" class="back">&larr; hry</a>
     <h1>Ako idú za sebou dni?</h1>
     <p class="subtitle">zoraď dni v týždni alebo mesiace v roku</p>
+    <p id="clockwise-hint" style="display:none; font-size:0.5rem; color:#888; margin-bottom:0.5rem;">↻ v smere hodinových ručičiek</p>
 
     <div class="mode-select" id="mode-select">
         <button class="mode-btn" onclick="startGame('week')">Týždeň</button>
@@ -137,14 +159,18 @@
     let dragItem = null;
     let dragValue = null;
 
+    let circleOffset = 0; // random rotation for months circle
+
     function startGame(m) {
         mode = m;
         items = mode === 'week' ? [...DAYS] : [...MONTHS];
         fixedIndex = Math.floor(Math.random() * items.length);
+        circleOffset = Math.floor(Math.random() * items.length); // randomize where the circle starts
 
         document.getElementById('mode-select').style.display = 'none';
         document.getElementById('game-area').style.display = 'flex';
         document.getElementById('result').textContent = '';
+        document.getElementById('clockwise-hint').style.display = (mode === 'month') ? 'block' : 'none';
 
         buildSlots();
         buildPool();
@@ -154,12 +180,28 @@
         const container = document.getElementById('slots');
         container.innerHTML = '';
         const isRow = mode === 'week';
-        container.className = isRow ? 'slots-row' : 'slots-col';
+        const isCircle = mode === 'month';
+        container.className = isRow ? 'slots-row' : (isCircle ? 'slots-circle' : 'slots-col');
 
         slots = [];
-        for (let i = 0; i < items.length; i++) {
+        const n = items.length;
+
+        for (let i = 0; i < n; i++) {
             const slot = document.createElement('div');
-            slot.className = 'slot' + (isRow ? '' : ' slot-month');
+
+            if (isCircle) {
+                slot.className = 'slot';
+                // Place in a circle, starting from a random offset
+                const displayIdx = (i + circleOffset) % n;
+                const angle = (displayIdx / n) * 2 * Math.PI - Math.PI / 2;
+                const radius = 42; // percentage
+                const cx = 50 + Math.cos(angle) * radius;
+                const cy = 50 + Math.sin(angle) * radius;
+                slot.style.left = cx + '%';
+                slot.style.top = cy + '%';
+            } else {
+                slot.className = 'slot' + (isRow ? '' : ' slot-month');
+            }
             slot.dataset.index = i;
 
             if (i === fixedIndex) {
@@ -288,11 +330,23 @@
             return;
         }
 
-        const correct = slots.every((s, i) => s.value === items[i]);
+        let correct;
+        if (mode === 'month') {
+            // Circle: check that each slot's month is followed by the correct next month
+            correct = true;
+            const n = slots.length;
+            for (let i = 0; i < n; i++) {
+                const curr = items.indexOf(slots[i].value);
+                const next = items.indexOf(slots[(i + 1) % n].value);
+                if ((curr + 1) % n !== next) { correct = false; break; }
+            }
+        } else {
+            correct = slots.every((s, i) => s.value === items[i]);
+        }
+
         if (correct) {
             result.textContent = 'Výborne! Správne zoradené! 🎉';
             result.className = 'success';
-            // Mark all as correct
             slots.forEach(s => {
                 const item = s.element.querySelector('.item');
                 if (item) item.classList.add('placed');
@@ -300,15 +354,17 @@
         } else {
             result.textContent = 'Skús to znova!';
             result.className = 'error';
-            // Highlight wrong ones
             slots.forEach((s, i) => {
                 const item = s.element.querySelector('.item');
                 if (item && !item.classList.contains('fixed')) {
-                    if (s.value === items[i]) {
-                        item.style.borderColor = '#2ecc71';
-                    } else {
-                        item.style.borderColor = '#e94560';
-                    }
+                    // Check if this slot's neighbors are correct
+                    const n = slots.length;
+                    const curr = items.indexOf(s.value);
+                    const prev = items.indexOf(slots[(i - 1 + n) % n].value);
+                    const next = items.indexOf(slots[(i + 1) % n].value);
+                    const prevOk = (prev + 1) % n === curr;
+                    const nextOk = (curr + 1) % n === next;
+                    item.style.borderColor = (prevOk && nextOk) ? '#2ecc71' : '#e94560';
                 }
             });
         }
