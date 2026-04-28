@@ -5,11 +5,11 @@ const BASKET_W = 60;
 const BASKET_H = 40;
 const APPLE_SIZE = 28;
 const CHAR_SIZE = 48;
-const INITIAL_SPEED = 1.3;
-const SPEED_INCREMENT = 0.0003;
-const SPAWN_INTERVAL_START = 1400;
-const SPAWN_INTERVAL_MIN = 400;
-const SPAWN_INTERVAL_DECAY = 0.998;
+const INITIAL_SPEED = 1.8;
+const SPEED_INCREMENT = 0.0004;
+const SPAWN_INTERVAL_START = 1800;
+const SPAWN_INTERVAL_MIN = 450;
+const SPAWN_INTERVAL_DECAY = 0.997;
 
 let canvas, ctx;
 let character = null; // 'oto' or 'lujza'
