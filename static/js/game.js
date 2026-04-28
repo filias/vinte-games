@@ -5,10 +5,10 @@ const BASKET_W = 60;
 const BASKET_H = 40;
 const APPLE_SIZE = 28;
 const CHAR_SIZE = 48;
-const INITIAL_SPEED = 1.8;
-const SPEED_INCREMENT = 0.0004;
-const SPAWN_INTERVAL_START = 1800;
-const SPAWN_INTERVAL_MIN = 450;
+const INITIAL_SPEED = 2;
+const SPEED_INCREMENT = 0.0005;
+const SPAWN_INTERVAL_START = 1200;
+const SPAWN_INTERVAL_MIN = 300;
 const SPAWN_INTERVAL_DECAY = 0.997;
 
 let canvas, ctx;
@@ -200,7 +200,8 @@ function gameLoop(timestamp) {
     if (!gameRunning) return;
 
     if (!lastFrameTime) lastFrameTime = timestamp;
-    const dt = Math.min((timestamp - lastFrameTime) / 16.67, 3); // normalize to 60fps, cap at 3x
+    const rawDt = (timestamp - lastFrameTime) / 16.67; // normalize to 60fps
+    const dt = Math.min(rawDt * 0.65, 3); // scale down to match original 120Hz feel
     lastFrameTime = timestamp;
 
     update(timestamp, dt);
