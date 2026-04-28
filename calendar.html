@@ -170,7 +170,7 @@
         document.getElementById('mode-select').style.display = 'none';
         document.getElementById('game-area').style.display = 'flex';
         document.getElementById('result').textContent = '';
-        document.getElementById('clockwise-hint').style.display = (mode === 'month') ? 'block' : 'none';
+        document.getElementById('clockwise-hint').style.display = 'block';
 
         buildSlots();
         buildPool();
@@ -181,7 +181,8 @@
         container.innerHTML = '';
         const isRow = mode === 'week';
         const isCircle = mode === 'month';
-        container.className = isRow ? 'slots-row' : (isCircle ? 'slots-circle' : 'slots-col');
+        const isCircle = true; // both week and month use circle
+        container.className = 'slots-circle';
 
         // Add clockwise arrow in the center of the circle
         if (isCircle) {
@@ -197,19 +198,14 @@
         for (let i = 0; i < n; i++) {
             const slot = document.createElement('div');
 
-            if (isCircle) {
-                slot.className = 'slot';
-                // Place in a circle, starting from a random offset
-                const displayIdx = (i + circleOffset) % n;
-                const angle = (displayIdx / n) * 2 * Math.PI - Math.PI / 2;
-                const radius = 42; // percentage
-                const cx = 50 + Math.cos(angle) * radius;
-                const cy = 50 + Math.sin(angle) * radius;
-                slot.style.left = cx + '%';
-                slot.style.top = cy + '%';
-            } else {
-                slot.className = 'slot' + (isRow ? '' : ' slot-month');
-            }
+            slot.className = 'slot';
+            const displayIdx = (i + circleOffset) % n;
+            const angle = (displayIdx / n) * 2 * Math.PI - Math.PI / 2;
+            const radius = 42;
+            const cx = 50 + Math.cos(angle) * radius;
+            const cy = 50 + Math.sin(angle) * radius;
+            slot.style.left = cx + '%';
+            slot.style.top = cy + '%';
             slot.dataset.index = i;
 
             if (i === fixedIndex) {
@@ -338,18 +334,13 @@
             return;
         }
 
-        let correct;
-        if (mode === 'month') {
-            // Circle: check that each slot's month is followed by the correct next month
-            correct = true;
-            const n = slots.length;
-            for (let i = 0; i < n; i++) {
-                const curr = items.indexOf(slots[i].value);
-                const next = items.indexOf(slots[(i + 1) % n].value);
-                if ((curr + 1) % n !== next) { correct = false; break; }
-            }
-        } else {
-            correct = slots.every((s, i) => s.value === items[i]);
+        // Circle: check that each slot is followed by the correct next item
+        let correct = true;
+        const n = slots.length;
+        for (let i = 0; i < n; i++) {
+            const curr = items.indexOf(slots[i].value);
+            const next = items.indexOf(slots[(i + 1) % n].value);
+            if ((curr + 1) % n !== next) { correct = false; break; }
         }
 
         if (correct) {
