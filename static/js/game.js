@@ -200,8 +200,7 @@ function gameLoop(timestamp) {
     if (!gameRunning) return;
 
     if (!lastFrameTime) lastFrameTime = timestamp;
-    const rawDt = (timestamp - lastFrameTime) / 16.67; // normalize to 60fps
-    const dt = Math.min(rawDt * 0.8, 3); // scale down to match original 120Hz feel
+    const dt = Math.min((timestamp - lastFrameTime) / 16.67, 3); // normalize to 60fps
     lastFrameTime = timestamp;
 
     update(timestamp, dt);
